@@ -1,0 +1,20 @@
+{
+  "name": "menuify",
+  "version": "1.0.0",
+  "description": "Create windows shell context menus with ease",
+  "main": "main.js",
+  "repository": "https://www.github.com/microart-inc/menuify",
+  "author": "Microart inc. & Fistik",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node --no-warnings main.js"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "inquirer": "^9.0.1",
+    "pkginfo": "^0.4.1",
+    "regedit": "^5.1.1",
+    "uuid": "^8.3.2"
+  }
+}
