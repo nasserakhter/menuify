@@ -1,16 +1,19 @@
 import inquirer from "inquirer";
+import { handleMainMenu } from "./io/handleCommand.js";
 
 export async function startApp() {
-    let menu = await inquirer.prompt({
+    let res = await inquirer.prompt({
         type: "list",
         name: "menu",
         message: "Welcome to Menuify",
         choices: [
-            "Create a new menu",
-            "Edit an existing menu",
-            "Delete an existing menu",
-            "Exit"
+            { name: "Create a new menu", value: "create" },
+            { name: "Edit an existing menu", value: "edit" },
+            { name: "Delete an existing menu", value: "delete" },
+            new inquirer.Separator(),
+            { name: "Exit", value: "exit" }
         ]
     });
-    console.log(menu);
+
+    await handleMainMenu(res.menu);
 }

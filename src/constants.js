@@ -5,5 +5,6 @@ export let constants = {
     name: "Menuify",
     developer: "Microart inc. & Fistik",
     url: "https://microart.cf/showroom/menuify",
-    splash: splash.raw
+    splash: splash.raw,
+    
 }
