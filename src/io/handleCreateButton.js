@@ -1,11 +1,12 @@
 import consolekeys from './consolekeys.js';
 import box from './box.js';
 import inquirer from 'inquirer';
+import handleFfmpeg from './actions/handleFfmpeg.js';
 
-export default async function handleCreateButton(full = true) {
+export default async function handleCreateButton(full = true, index = 0) {
     console.log(consolekeys.bufferSecondary); // switch to secondary buffer
     console.clear();
-    box("Create Button");
+    box("Create Button" + (index > 0 ? " #" + index : ""));
     console.log("");
     let button = {};
     if (full) {
@@ -29,6 +30,14 @@ export default async function handleCreateButton(full = true) {
         ]
     });
     button.targetType = targetType;
+    let target = "";
+    switch (targetType) {
+        case "ffmpeg":
+            target = await handleFfmpeg();
+            break;
+    }
+
+
     console.log(consolekeys.bufferPrimary); // switch to primary buffer
     return button;
 }
