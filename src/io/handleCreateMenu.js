@@ -1,4 +1,6 @@
 import inquirer from "inquirer";
+import handleCreateCascadeMenu from "./handleCreateCascadeMenu.js";
+import handleCreateButton from "./handleCreateButton.js";
 
 export default async function handleCreateMenu() {
     // required params
@@ -28,13 +30,21 @@ export default async function handleCreateMenu() {
         {
             type: "confirm",
             name: "cascade",
-            message: "Is this a cascading menu (will this be a submenu with multiple buttons [y] or just one single button [n])?",
+            message: "Is this a cascading menu (will this be a submenu with multiple buttons [y] or just one single button [n])?:",
             default: false
         },
         {
-            type: "input",
+            type: "confirm",
             name: "icon",
-            message: "Enter the icon path to display for this menu (right click ico file and copy the path):"
+            message: "Do you want to add an icon image to this menu?:"
         }
     ]);
+
+    if (params.cascade) {
+        params.buttons = await handleCreateCascadeMenu();
+    } else {
+        params.button = await handleCreateButton(false);
+    }
+
+    console.dir(params);
 }
