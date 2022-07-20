@@ -27,7 +27,10 @@ export default async function handleFfmpeg() {
             break;
     }
     console.log(consolekeys.bufferPrimary); // switch to primary buffer
-    return command;
+    return {
+        type: "command",
+        command
+    };
 }
 
 async function setupShrink() {
@@ -110,7 +113,7 @@ async function setupShrink() {
     if (res !== "none") {
         command += ` -s ${res}`;
     }
-    command += ` {output}`;
+    command += ` {filenameWE}_shrunk.mp4`;
 
     console.clear();
     console.log("This is the final ffmpeg command:");
@@ -118,6 +121,7 @@ async function setupShrink() {
     let {edit} = await inquirer.prompt({
         type: "confirm",
         name: "edit",
+        default: false,
         message: "Do you want to edit this command?"
     });
     if (edit) {

@@ -11,6 +11,7 @@ export async function startApp() {
             { name: "Edit an existing menu", value: "edit" },
             { name: "Delete an existing menu", value: "delete" },
             new inquirer.Separator(),
+            { name: "Read the documentation", value: "docs" },
             { name: "Exit", value: "exit" }
         ]
     });

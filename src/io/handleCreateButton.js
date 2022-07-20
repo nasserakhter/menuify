@@ -30,14 +30,13 @@ export default async function handleCreateButton(full = true, index = 0) {
         ]
     });
     button.targetType = targetType;
-    let target = "";
+    let action = {};
     switch (targetType) {
         case "ffmpeg":
-            target = await handleFfmpeg();
+            action = await handleFfmpeg();
             break;
     }
-
-
+    button.action = action;
     console.log(consolekeys.bufferPrimary); // switch to primary buffer
     return button;
 }
