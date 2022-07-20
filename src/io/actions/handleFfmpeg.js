@@ -27,10 +27,7 @@ export default async function handleFfmpeg() {
             break;
     }
     console.log(consolekeys.bufferPrimary); // switch to primary buffer
-    return {
-        type: "command",
-        command
-    };
+    return command;
 }
 
 async function setupShrink() {

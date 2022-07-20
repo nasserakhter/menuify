@@ -1,16 +1,15 @@
 import inquirer from "inquirer";
 import handleCreateCascadeMenu from "./handleCreateCascadeMenu.js";
 import handleCreateButton from "./handleCreateButton.js";
+/*
+import compileCommand from "./compilers/commandCompiler.js";
+import { init, compileFile, writeManifest } from './compilers/fileCompiler.js';
+*/
+import compileManifest from "./compilers/compileManifest.js";
+import { v4 } from "uuid";
 
 export default async function handleCreateMenu() {
-    // required params
-    let name = ""; // display name
-    let description = ""; // description
-    let ext = ""; // the file extension this menu will cover
-    let cascade = false; // whether this is a single button or cascading menu
-    let icon = ""; // the icon to display for this menu
-    let buttons = []; // the buttons in this menu, if cascading
-
+    /*
     let params = await inquirer.prompt([
         {
             type: "input",
@@ -39,12 +38,50 @@ export default async function handleCreateMenu() {
             message: "Do you want to add an icon image to this menu?:"
         }
     ]);
+    params.id = v4()
 
     if (params.cascade) {
         params.buttons = await handleCreateCascadeMenu();
     } else {
-        params.button = await handleCreateButton(false);
+        params.buttons = [await handleCreateButton(false)];
+    }*/
+
+    let params = {
+        name: 'shrink',
+        description: 'shinrky',
+        ext: 'mp4',
+        cascade: false,
+        icon: false,
+        id: '19e8697b-683b-47fa-9250-e6d4e5c41790',
+        buttons: [
+            {
+                type: 'command',
+                id: "12e8697b-683b-47fa-9250-e6d4e5c41790",
+                action: 'ffmpeg -i {filename} -crf 35 -vf "fps=30" -s 1920x1080 {filenameWE}_shrunk.mp4'
+            }
+        ]
     }
 
-    console.dir(params);
+    compileManifest(params);
+    /*
+    let comComp = compileCommand(params.button.action, {
+        project_id: params.id,
+        button_name: params.name,
+        button_targetType: params.button.type
+    });
+    let { confirm } = await inquirer.prompt({
+        type: "confirm",
+        name: "confirm",
+        message: "Do you want to create this menu?"
+    });
+
+    if (confirm) {
+        init();
+        let file = compileFile(params.id, comComp);
+        let json = JSON.stringify(params);
+        let manifest = writeManifest(params.id, json);
+        console.log(file);
+        console.log(manifest);
+    }
+    */
 }
