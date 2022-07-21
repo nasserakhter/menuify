@@ -5,6 +5,7 @@ Example: error 0204 is the error code for the error source '02' and the error re
 Table
 
 13 General errors
+1302 Project file corrupt or incomplete
 21 Registry errors
 36 Filesystem errors
 3602: Directory could not be created, either due to access issues or invalid naming, etc.

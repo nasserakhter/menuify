@@ -2,6 +2,7 @@ import { show } from "./context.js";
 import { mainMenu } from "./pages/mainMenu.js";
 import { createMenu } from "./pages/createMenu.js";
 import filesystem from "./filesystem.js";
+import { editMenu } from "./pages/editMenu.js";
 
 export async function startApp() {
     filesystem.initialize("/Users/nasserjaved/Downloads/menuify");
@@ -14,6 +15,7 @@ export async function startApp() {
             optionPage = createMenu;
             break;
         case "edit":
+            optionPage = editMenu;
             break;
         case "delete":
             break;

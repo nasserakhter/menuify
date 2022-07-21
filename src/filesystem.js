@@ -29,6 +29,7 @@ export default class filesystem {
         this.ensureProjectWritable();
         logVerbose(`Writing file '${name}'...`);
         fs.writeFileSync(`${this.projectDir}/${name}`, content);
+        return `${this.projectDir}/${name}`;
     }
 
     saveManifest() {
@@ -38,6 +39,7 @@ export default class filesystem {
     }
 
     static rootDir = "";
+    static guidRegex = /^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$/gm;
 
     static initialize(rootDir) {
         logVerbose("Initializing filesystem...");
@@ -52,5 +54,24 @@ export default class filesystem {
         } else {
             logVerbose("A root directory already exists, no need to create new one.");
         }
+    }
+
+    static getProjects() {
+        logVerbose("Getting projects...");
+        let projects = [];
+        fs.readdirSync(filesystem.rootDir).forEach(projectDir => {
+            if (projectDir.match(filesystem.guidRegex) &&
+                fs.lstatSync(`${filesystem.rootDir}/${projectDir}`).isDirectory() &&
+                fs.existsSync(`${filesystem.rootDir}/${projectDir}/manifest.json`)) {
+                let project = JSON.parse(fs.readFileSync(`${filesystem.rootDir}/${projectDir}/manifest.json`));
+                projects.push(project);
+            }
+        });
+        return projects;
+    }
+
+    static deleteProject(project) {
+        logVerbose(`Deleting project '${project.name}'...`);
+        fs.rmdirSync(`${filesystem.rootDir}/${project.id}`, { recursive: true });
     }
 }
