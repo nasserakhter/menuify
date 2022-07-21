@@ -9,4 +9,10 @@ console.log(chalk.cyan(`${constants.name} v${constants.version.toFixed(1)} by ${
 console.log(chalk.cyan(`For more information, guides, or anything else visit: \n${chalk.yellow.underline(constants.url)}`));
 console.log(chalk.cyan(`(C)${(new Date()).getFullYear()} Microart inc. All Rights Reserved\n`));
 
-await startApp();
+try {
+    await startApp();
+} catch (err) {
+    console.error(chalk.red(err.message));
+    console.log(chalk.magenta(`You can report this error here: ${chalk.underline("https://microart.cf/menuify/report?code=" + err.code)}`));
+    console.warn(chalk.yellow(`${constants.name} will now exit.`));
+}

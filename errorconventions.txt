@@ -1,0 +1,10 @@
+An error code is made up of two segments, the error source and error reason.
+
+Example: error 0204 is the error code for the error source '02' and the error reason '04'.
+
+Table
+
+13 General errors
+21 Registry errors
+36 Filesystem errors
+3602: Directory could not be created, either due to access issues or invalid naming, etc.

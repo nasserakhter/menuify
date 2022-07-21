@@ -1,20 +1,29 @@
-import inquirer from "inquirer";
-import { handleMainMenu } from "./io/handleCommand.js";
+import { show } from "./context.js";
+import { mainMenu } from "./pages/mainMenu.js";
+import { createMenu } from "./pages/createMenu.js";
+import filesystem from "./filesystem.js";
 
 export async function startApp() {
-    let res = await inquirer.prompt({
-        type: "list",
-        name: "menu",
-        message: "Welcome to Menuify",
-        choices: [
-            { name: "Create a new menu", value: "create" },
-            { name: "Edit an existing menu", value: "edit" },
-            { name: "Delete an existing menu", value: "delete" },
-            new inquirer.Separator(),
-            { name: "Read the documentation", value: "docs" },
-            { name: "Exit", value: "exit" }
-        ]
-    });
+    filesystem.initialize("/Users/nasserjaved/Downloads/menuify");
 
-    await handleMainMenu(res.menu);
+    let option = await show(mainMenu);
+    let optionPage = null;
+
+    switch (option) {
+        case "create":
+            optionPage = createMenu;
+            break;
+        case "edit":
+            break;
+        case "delete":
+            break;
+        case "docs":
+            break;
+        case "exit":
+        default:
+            process.exit(0);
+            break;
+    }
+
+    await show(optionPage);
 }
