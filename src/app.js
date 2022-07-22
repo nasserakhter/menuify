@@ -3,8 +3,14 @@ import { mainMenu } from "./pages/mainMenu.js";
 import { createMenu } from "./pages/createMenu.js";
 import filesystem from "./filesystem.js";
 import { editMenu } from "./pages/editMenu.js";
+import { importMenu } from "./pages/importMenu.js";
+import { exportMenu } from "./pages/exportMenu.js";
+import { storePage } from "./pages/storePage.js";
+import { filepickerWizard } from "./wizards/filepickerWizard.js";
 
 export async function startApp() {
+    await show(filepickerWizard);
+    return;
     filesystem.initialize("/Users/nasserjaved/Downloads/menuify");
 
     let option = await show(mainMenu);
@@ -19,6 +25,17 @@ export async function startApp() {
             break;
         case "delete":
             break;
+        // Seperator
+        case "import":
+            optionPage = importMenu;
+            break;
+        case "export":
+            optionPage = exportMenu;
+            break;
+        case "store":
+            optionPage = storePage;
+            break;
+        // Seperator
         case "docs":
             break;
         case "exit":

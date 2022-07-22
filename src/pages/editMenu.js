@@ -3,6 +3,8 @@ import { unbindProject } from "../binder.js";
 import filesystem from "../filesystem.js";
 import { editName } from "./editMenu/editName.js";
 import { show } from "../context.js";
+import { editDescription } from "./editMenu/editDescription.js";
+import { editExtension } from "./editMenu/editExtension.js";
 
 export async function editMenu({ inquirer }) {
     let projects = filesystem.getProjects();
@@ -21,15 +23,15 @@ export async function editMenu({ inquirer }) {
     let { option } = await inquirer.prompt({
         type: "list",
         name: "option",
-        message: "What do you want to do with this project?",
+        message: "What do you want to edit in this project?",
         choices: [
-            { name: "Edit Name", value: "name" },
-            { name: "Edit Description", value: "description" },
-            { name: "Edit Extension", value: "ext" },
-            { name: "Edit Icon", value: "icon" },
-            { name: "Edit Buttons", value: "buttons" },
+            { name: "Name: " + project.name, value: "name" },
+            { name: "Description: " + project.description, value: "description" },
+            { name: "Extension: ." + project.ext, value: "ext" },
+            { name: "Icon: " + project.icon, value: "icon" },
+            { name: "Buttons: " + project.buttons.length, value: "buttons" },
             new inquirer.Separator(),
-            { name: "Delete Project", value: "delete" }
+            { name: chalk.red("Delete Project"), value: "delete" }
         ]
     });
 
@@ -39,6 +41,13 @@ export async function editMenu({ inquirer }) {
         case "name":
             editPage = editName;
             break;
+        case "description":
+            editPage = editDescription;
+            break;
+        case "ext":
+            editPage = editExtension;
+            break;
+            
         case "delete":
             filesystem.deleteProject(project);
             await unbindProject(project);

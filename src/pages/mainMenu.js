@@ -8,8 +8,13 @@ export async function mainMenu({ inquirer }) {
             { name: "Edit an existing menu", value: "edit" },
             { name: "Delete an existing menu", value: "delete" },
             new inquirer.Separator(),
+            { name: "Import a menu", value: "import" },
+            { name: "Export a menu", value: "export" },
+            { name: "Menuify Store", value: "store" },
+            new inquirer.Separator(),
             { name: "Read the documentation", value: "docs" },
-            { name: "Exit", value: "exit" }
+            { name: "Exit", value: "exit" },
+            new inquirer.Separator()
         ]
     });
     return menu;

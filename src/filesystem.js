@@ -1,6 +1,9 @@
 import fs from 'fs';
 import MenuifyError from './menuifyError.js';
 import { logVerbose } from './logger.js';
+import path from 'path';
+import getDownloadFolder from 'downloads-folder';
+import sanitize from 'sanitize-filename';
 
 export default class filesystem {
 
@@ -54,6 +57,14 @@ export default class filesystem {
         } else {
             logVerbose("A root directory already exists, no need to create new one.");
         }
+    }
+
+    static exportProject(project) {
+        logVerbose("Exporting project...");
+        let json = JSON.stringify(project);
+        let file = path.join(getDownloadFolder(), `${sanitize(project.name)}.menu`);
+        fs.writeFileSync(file, json);
+        return file;
     }
 
     static getProjects() {
