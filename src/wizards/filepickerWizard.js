@@ -1,69 +1,165 @@
 import fs from 'fs';
 import getDownloadsFolder from 'downloads-folder';
-import path from 'path';
+import path, { sep } from 'path';
 import chalk from 'chalk';
 import consolekeys from '../consolekeys.js';
 import moment from 'moment';
 
-export async function filepickerWizard({ inquirer, buffer }) {
+let dispIndex = 0;
+
+export async function filepickerWizard({ inquirer, buffer, props }) {
     buffer.secondary();
     buffer.clear();
 
-    let currentDirectory = getDownloadsFolder() + "/test";
+    let currentDirectory = getDownloadsFolder();
     let highlighted = 0;
     let loop = true;
-    let marginTop = 5;
+    let marginTop = 6;
+    let showHidden = false;
+    let firstRun = true;
+    let selectedFile = null;
+    let filters = [];
+
+    if (props && props.filters) filters = props.filters;
 
     while (loop) {
         try {
-            let files = getDirectoryFiles(currentDirectory);
+            let files = getDirectoryFiles(currentDirectory, filters);
+            //let nonHiddenIndexes = files.map((f,i) => {f.i = i; return f;}).filter(f => !f.hidden).map(f => f.i);
+            if (firstRun) {
+                highlighted = showHidden ? 0 : files.findIndex(file => !file.hidden);
+                firstRun = false;
+                dispIndex = highlighted;
+            }
             render(files, {
                 highlighted,
-                marginTop
+                marginTop,
+                showHidden,
+                directory: currentDirectory,
+                filters
             });
             let key = await readKey();
 
             switch (key) {
                 case consolekeys.sigint:
                     loop = false;
+                    selectedFile = null;
                     break;
                 case consolekeys.backspace:
                 case consolekeys.backspaceWin:
+                    firstRun = true;
                     currentDirectory = getParentDirectory(currentDirectory);
                     break;
                 case consolekeys.up:
                     if (highlighted > 0) {
-                        highlighted--;
+                        if (showHidden) {
+                            highlighted--;
+                        } else {
+                            let index = -1;
+                            let found = false;
+                            for (let i = highlighted - 1; i >= 0; i--) {
+                                if (!found) {
+                                    if (!files[i].hidden) {
+                                        index = i;
+                                        found = true;
+                                    }
+                                }
+                            }
+                            if (index >= 0) {
+                                highlighted = index;
+                            }
+                        }
                     }
+                    break;
+                case consolekeys.h:
+                case consolekeys.H:
+                    showHidden = !showHidden;
+                    firstRun = true;
                     break;
                 case consolekeys.down:
                     if (highlighted < files.length - 1) {
-                        highlighted++;
+                        // dont select hidden files
+                        if (showHidden) {
+                            highlighted++;
+                        } else {
+                            let index = -1;
+                            let found = false;
+                            for (let i = highlighted + 1; i < files.length; i++) {
+                                if (!found) {
+                                    if (!files[i].hidden) {
+                                        index = i;
+                                        found = true;
+                                    }
+                                }
+                            }
+                            if (index > -1) {
+                                highlighted = index;
+                            }
+                        }
+                    }
+                    break;
+                case consolekeys.enter:
+                    let file = files[highlighted].path;
+                    let stats = fs.statSync(file);
+                    if (stats.isDirectory()) {
+                        currentDirectory = file;
+                        firstRun = true;
+                    } else {
+                        selectedFile = file;
+                        loop = false;
                     }
                     break;
             }
-        } catch (e) { }
+        } catch (e) {
+            console.log(e);
+            loop = false;
+        }
     }
 
     buffer.primary();
+    return selectedFile;
 }
 
-function getDirectoryFiles(directory) {
+function getDirectoryFiles(directory, filters) {
     let files = fs.readdirSync(directory);
     let result = [];
     files.forEach(file => {
-        let filePath = directory + "/" + file;
-        let stat = fs.statSync(filePath);
-        let isDirectory = stat.isDirectory();
-        let size = stat.size;
-        let modified = moment(stat.mtime);
-        result.push({
-            name: file,
-            extension: path.extname(file),
-            isDirectory,
-            size,
-            modified
-        });
+        if (file) {
+            let filePath = directory + "/" + file;
+            let extension = path.extname(file);
+            let stat = fs.lstatSync(filePath);
+            let isDirectory = stat.isDirectory();
+            let allow = false;
+            if (filters.length > 0) {
+                if (filters.includes(extension.replaceAll(".", ""))) {
+                    allow = true;
+                }
+            } else {
+                allow = true;
+            }
+            if (isDirectory) allow = true;
+            if (file === ".DS_Store") allow = false;
+            if (allow) {
+                /*
+                let stat = fs.statSync(filePath);
+                let isDirectory = stat.isDirectory();
+                let size = stat.size;
+                le t  modified = moment(stat.mtime);
+                */
+                let size = stat.size;
+                let modified = moment(stat.mtime);
+                let hidden = file.startsWith(".");
+                result.push({
+                    name: file,
+                    path: filePath,
+                    extension,
+                    isDirectory,
+                    size,
+                    modified,
+                    hidden
+                });
+            }
+        }
     });
     return result;
 }
@@ -74,13 +170,12 @@ function getParentDirectory(directory) {
     return dir;
 }
 
-let dispIndex = 0;
-
-function render(files, { highlighted, marginTop }) {
+function render(files, { highlighted, marginTop, showHidden, directory, filters }) {
     console.clear();
     let col = process.stdout.columns;
     let row = process.stdout.rows;
-    let max = Math.min(files.length, row - marginTop);
+    let length = showHidden ? files.length : files.filter(f => !f.hidden).length;
+    let max = Math.min(length, row - marginTop);
     if (highlighted >= (max + dispIndex)) {
         dispIndex = highlighted - max + 1;
     }
@@ -89,17 +184,25 @@ function render(files, { highlighted, marginTop }) {
     }
 
     let seperate = col / 4;
-
     let buffer = "";
+    buffer += chalk.bgWhite(" Microart Terminal File Picker v1".padEnd(col - 1) + " \n");
+    buffer += `${chalk.bold(" Shortcuts")} : ${chalk.magenta("[h]")} Toggle show hidden files - ${chalk.magenta("[backspace]")}  Go to parent folder - ${chalk.magenta("[enter]")}  View folder or select file\n`;
+    buffer += ` Viewing (${filters.join()}) -> ${directory}\n`;
+    buffer += ("      " + `File name [${highlighted + 1}/${files.length}] ${showHidden ? "" : "(some files hidden)"}`.padEnd(seperate) + "Date modified".padEnd(seperate) + "Size".padEnd(seperate)).padEnd(col - 1) + "\n";
+    buffer += "-".repeat(col - 1) + "\n";
+
     for (let i = 0; i < max; i++) {
         let realIndex = i + dispIndex;
-        if (realIndex === highlighted) {
-            let tempBuffer = generateFileInfo(files[realIndex], seperate);
-            buffer += chalk.bgWhite(tempBuffer);
-            buffer += "\n";
-        } else {
-            buffer += generateFileInfo(files[realIndex], seperate);
-            buffer += "\n";
+        let file = files[realIndex];
+        if (file && (showHidden || !file.hidden)) {
+            if (realIndex === highlighted) {
+                let tempBuffer = generateFileInfo(file, seperate);
+                buffer += chalk.bgWhite(tempBuffer);
+                buffer += "\n";
+            } else {
+                buffer += generateFileInfo(file, seperate);
+                buffer += "\n";
+            }
         }
     }
     process.stdout.write(buffer);
@@ -108,25 +211,28 @@ function render(files, { highlighted, marginTop }) {
 function generateFileInfo(file, seperate) {
     let buffer = "";
     buffer += " ";
-    let isDirectory = file.isDirectory ? "*dir" : "file";
-    buffer += isDirectory;
-    buffer += "   ";
 
     let rawName = file.name;
-    if (rawName.length > seperate + 2) {
+    if (rawName.length > seperate - 2) {
         let didRemoveExtension = false;
-        if (file.isDirectory) {
+        if (!file.isDirectory) {
             let extensionIndex = rawName.lastIndexOf(".");
             if (extensionIndex > 0) {
                 didRemoveExtension = true;
                 rawName = rawName.substring(0, extensionIndex);
             }
         }
+        rawName = rawName.substring(0, seperate - 3 - file.extension.length);
+        rawName += "\u2026";
 
+        if (didRemoveExtension) {
+            rawName += file.extension;
+        }
     }
-    let name = file.isDirectory ? chalk.cyan(rawName.padEnd(seperate)) : rawName.padEnd(seperate);;
+    buffer += file.isDirectory ? chalk.magenta(" dir ") : chalk.yellow("file ");
+    let name = file.isDirectory ? chalk.cyan(rawName.padEnd(seperate)) : chalk.green(rawName.padEnd(seperate));
     buffer += name;
-    let modified = file.modified.format("MMM Do, YYYY hh:mm A");
+    let modified = moment(file.modified).format("MMM Do, YYYY h:mm A");
     buffer += modified.padEnd(seperate);
     if (!file.isDirectory) {
         let size = file.size;
@@ -143,6 +249,8 @@ function generateFileInfo(file, seperate) {
         }
         let sizeString = size.toFixed(1) + " " + suffix[iterations];
         buffer += sizeString.padEnd(seperate);
+    } else {
+        buffer += "".padEnd(seperate);
     }
     return buffer;
 }
