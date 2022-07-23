@@ -1,8 +1,8 @@
 import { compile } from "../compile.js";
 import { show } from "../context.js";
-import filesystem from "../filesystem.js";
 import { buttonWizard } from "../wizards/buttonWizard.js";
 import { cascadeMenuWizard } from "../wizards/cascadeMenuWizard.js";
+import { filepickerWizard } from "../wizards/filepickerWizard.js";
 
 export async function createMenu({ inquirer, v4 }) {
     // Create a new project
@@ -35,11 +35,7 @@ export async function createMenu({ inquirer, v4 }) {
         }
     ]);
     if (project.icon) {
-        let { icon } = await inquirer.prompt({
-            type: "input",
-            name: "icon",
-            message: "Drop the image file here (or enter the path):"
-        });
+        let icon = await show(filepickerWizard, { title: "Select an icon", filters: ["png", "jpg", "jpeg", "ico", "webp"] });
         project.icon = icon;
     }
     project.id = v4();

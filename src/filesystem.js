@@ -59,10 +59,10 @@ export default class filesystem {
         }
     }
 
-    static exportProject(project) {
+    static exportProject(project, cPath) {
         logVerbose("Exporting project...");
         let json = JSON.stringify(project);
-        let file = path.join(getDownloadFolder(), `${sanitize(project.name)}.menu`);
+        let file = path.join(cPath ?? getDownloadFolder(), `${sanitize(project.name)}.menu`);
         fs.writeFileSync(file, json);
         return file;
     }

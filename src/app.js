@@ -6,6 +6,7 @@ import { editMenu } from "./pages/editMenu.js";
 import { importMenu } from "./pages/importMenu.js";
 import { exportMenu } from "./pages/exportMenu.js";
 import { storePage } from "./pages/storePage.js";
+import { folderpickerWizard } from "./wizards/folderpickerWizard.js";
 
 export async function startApp() {
     filesystem.initialize("/Users/nasserjaved/Downloads/menuify");
@@ -34,6 +35,8 @@ export async function startApp() {
             break;
         // Seperator
         case "docs":
+            console.log("No docs to read.");
+            process.exit(0);
             break;
         case "exit":
         default:

@@ -7,7 +7,14 @@ import moment from 'moment';
 
 let dispIndex = 0;
 
-export async function filepickerWizard({ readkey, buffer, props }) {
+export async function folderpickerWizard({ readkey, alert, buffer, props }) {
+
+    await alert(
+        "How to use",
+        "Use the arrow keys, backspace, and enter to navigate through your drive. Select a folder to use with the [M] key.",
+        ["Okay"]
+    );
+
     buffer.secondary();
     buffer.clear();
     console.log(consolekeys.hideCursor);
@@ -20,10 +27,8 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     let firstRun = true;
     let selectedFile = null;
     let filters = [];
-    let title = "";
 
     if (props && props.filters) filters = props.filters;
-    if (props && props.title) title = props.title;
 
     while (loop) {
         try {
@@ -39,8 +44,7 @@ export async function filepickerWizard({ readkey, buffer, props }) {
                 marginTop,
                 showHidden,
                 directory: currentDirectory,
-                filters,
-                title
+                filters
             });
             let key = await readkey();
 
@@ -75,11 +79,6 @@ export async function filepickerWizard({ readkey, buffer, props }) {
                         }
                     }
                     break;
-                case consolekeys.h:
-                case consolekeys.H:
-                    showHidden = !showHidden;
-                    firstRun = true;
-                    break;
                 case consolekeys.down:
                     if (highlighted < files.length - 1) {
                         // dont select hidden files
@@ -108,10 +107,12 @@ export async function filepickerWizard({ readkey, buffer, props }) {
                     if (stats.isDirectory()) {
                         currentDirectory = file;
                         firstRun = true;
-                    } else {
-                        selectedFile = file;
-                        loop = false;
                     }
+                    break;
+                case consolekeys.m:
+                case consolekeys.M:
+                    selectedFile = files[highlighted].path;
+                    loop = false;
                     break;
             }
         } catch (e) {
@@ -122,7 +123,7 @@ export async function filepickerWizard({ readkey, buffer, props }) {
 
     buffer.primary();
     console.log(consolekeys.showCursor);
-    return selectedFile;
+    return selectedFile ?? currentDirectory;
 }
 
 function getDirectoryFiles(directory, filters) {
@@ -134,17 +135,7 @@ function getDirectoryFiles(directory, filters) {
             let extension = path.extname(file);
             let stat = fs.lstatSync(filePath);
             let isDirectory = stat.isDirectory();
-            let allow = false;
-            if (filters.length > 0) {
-                if (filters.includes(extension.replaceAll(".", ""))) {
-                    allow = true;
-                }
-            } else {
-                allow = true;
-            }
-            if (isDirectory) allow = true;
-            if (file === ".DS_Store") allow = false;
-            if (allow) {
+            if (isDirectory) {
                 /*
                 let stat = fs.statSync(filePath);
                 let isDirectory = stat.isDirectory();
@@ -175,7 +166,7 @@ function getParentDirectory(directory) {
     return dir;
 }
 
-function render(files, { highlighted, marginTop, showHidden, directory, filters, title }) {
+function render(files, { highlighted, marginTop, showHidden, directory, filters }) {
     console.clear();
     let col = process.stdout.columns;
     let row = process.stdout.rows;
@@ -190,8 +181,8 @@ function render(files, { highlighted, marginTop, showHidden, directory, filters,
 
     let seperate = col / 4;
     let buffer = "";
-    buffer += chalk.bgWhite.black((" Microart Terminal File Picker v1" + (title === "" ? "" : "  |  " + title)).padEnd(col - 1) + " \n");
-    buffer += `${chalk.bold(" Shortcuts")} : ${chalk.magenta("[h]")} Toggle show hidden files - ${chalk.magenta("[backspace]")}  Go to parent folder - ${chalk.magenta("[enter]")}  View folder or select file\n`;
+    buffer += chalk.bgWhite.black(" Microart Terminal File Picker v1".padEnd(col - 1) + " \n");
+    buffer += `${chalk.bold(" Shortcuts")} : ${chalk.magenta("[m]")} Mark folder as selected - ${chalk.magenta("[backspace]")}  Go to parent folder - ${chalk.magenta("[enter]")}  View folder or select file\n`;
     buffer += ` Viewing (${filters.join()}) -> ${directory}\n`;
     buffer += ("      " + `File name [${highlighted + 1}/${files.length}] ${showHidden ? "" : "(some files hidden)"}`.padEnd(seperate) + "Date modified".padEnd(seperate) + "Size".padEnd(seperate)).padEnd(col - 1) + "\n";
     buffer += "-".repeat(col - 1) + "\n";

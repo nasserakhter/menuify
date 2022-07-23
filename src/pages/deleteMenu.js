@@ -1,9 +1,7 @@
 import chalk from "chalk";
-import { show } from "../context.js";
 import filesystem from "../filesystem.js";
-import { folderpickerWizard } from "../wizards/folderpickerWizard.js";
 
-export async function exportMenu({ inquirer }) {
+export async function deleteMenu({ inquirer }) {
     let projects = await filesystem.getProjects();
 
     let { project } = await inquirer.prompt({
@@ -18,9 +16,7 @@ export async function exportMenu({ inquirer }) {
         })
     });
 
-    let cPath = await show(folderpickerWizard, { title: "Select a folder to export to" });
+    filesystem.deleteProject(project);
 
-    let file = filesystem.exportProject(project, cPath);
-
-    console.log(chalk.green(`Exported project to ${file}`));
+    console.log(chalk.green("Project deleted successfully"));
 }
