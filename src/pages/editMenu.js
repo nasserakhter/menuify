@@ -47,11 +47,20 @@ export async function editMenu({ inquirer }) {
         case "ext":
             editPage = editExtension;
             break;
-            
+
         case "delete":
-            filesystem.deleteProject(project);
-            await unbindProject(project);
-            console.log(chalk.green("Project deleted."));
+            let { confirm } = await inquirer.prompt({
+                type: "confirm",
+                name: "confirm",
+                message: `Are you sure you want to delete ${project.name}?`
+            });
+            if (confirm) {
+                filesystem.deleteProject(project);
+                await unbindProject(project);
+                console.log(chalk.green("Project deleted."));
+            } else {
+                console.log(chalk.yellow("No changes made."));
+            }
             return;
     }
 

@@ -44,6 +44,7 @@ export async function buttonWizard({ inquirer, props, buffer, box }) {
             break;
     }
 
+    process.stdin.setRawMode(true);
     if (props.switchToPrimary ?? true) buffer.primary();
     return button;
 }

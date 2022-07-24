@@ -46,6 +46,8 @@ export async function folderpickerWizard({ readkey, alert, buffer, props }) {
                 directory: currentDirectory,
                 filters
             });
+
+            process.stdout.write("\x1B[0;0f");
             let key = await readkey();
 
             switch (key) {

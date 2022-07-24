@@ -16,7 +16,17 @@ export async function deleteMenu({ inquirer }) {
         })
     });
 
-    filesystem.deleteProject(project);
+    let { confirm } = await inquirer.prompt({
+        type: "confirm",
+        name: "confirm",
+        message: `Are you sure you want to delete ${project.name}?`
+    });
 
-    console.log(chalk.green("Project deleted successfully"));
+    if (confirm) {
+        filesystem.deleteProject(project);
+
+        console.log(chalk.green("Project deleted successfully"));
+    } else {
+        console.log(chalk.yellow("No changes made"));
+    }
 }

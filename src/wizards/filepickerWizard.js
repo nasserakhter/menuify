@@ -42,6 +42,7 @@ export async function filepickerWizard({ readkey, buffer, props }) {
                 filters,
                 title
             });
+            process.stdout.write("\x1B[0;0f");
             let key = await readkey();
 
             switch (key) {

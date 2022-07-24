@@ -267,7 +267,7 @@ function getContent(width, height, { index, path }) {
                     if (matches) {
                         matches.forEach(m => {
                             let text = m.replace(/[`]{1}/g, "");
-                            line = line.replace(reg, chalk.bgGray.white(text));
+                            line = line.replace(reg, chalk.bgRgb(70,70,70).white(text));
                         });
                     }
                 }

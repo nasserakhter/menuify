@@ -102,6 +102,13 @@ async function setupShrink({ inquirer }) {
         res = customRes;
     }
 
+    let { showOutput } = await inquirer.prompt({
+        type: "confirm",
+        name: "showOutput",
+        message: "Lastly, would you like to see the output of the ffmpeg commands in the terminal?",
+        default: false
+    });
+
     let command = 'ffmpeg -i {filename}';
     if (crf !== "none") {
         command += ` -crf ${crf}`;
@@ -112,7 +119,7 @@ async function setupShrink({ inquirer }) {
     if (res !== "none") {
         command += ` -s ${res}`;
     }
-    command += ` {filenameWE}_shrunk.mp4`;
+    command += ` "{filenameWE}_shrunk.mp4"`;
 
     console.clear();
     console.log("This is the final ffmpeg command:");
@@ -130,6 +137,10 @@ async function setupShrink({ inquirer }) {
             message: "Enter custom command (you can copy paste from above):"
         });
         command = edited;
+    }
+
+    if (!showOutput) {
+        command += " -loglevel quiet";
     }
     return command;
 }

@@ -7,11 +7,13 @@ import { importMenu } from "./pages/importMenu.js";
 import { exportMenu } from "./pages/exportMenu.js";
 import { storePage } from "./pages/storePage.js";
 import { docsPage } from "./pages/docsPage.js";
+import { deleteMenu } from "./pages/deleteMenu.js";
+import getDownloadsFolder from 'downloads-folder';
+import path from 'path';
 
 export async function startApp() {
-    await show(docsPage);
-    return;
-    filesystem.initialize("/Users/nasserjaved/Downloads/menuify");
+    process.stdin.setRawMode(true);
+    filesystem.initialize(path.join(getDownloadsFolder() + "/menuify"));
 
     let option = await show(mainMenu);
     let optionPage = null;
@@ -24,6 +26,7 @@ export async function startApp() {
             optionPage = editMenu;
             break;
         case "delete":
+            optionPage = deleteMenu;
             break;
         // Seperator
         case "import":
@@ -37,8 +40,7 @@ export async function startApp() {
             break;
         // Seperator
         case "docs":
-            console.log("No docs to read.");
-            process.exit(0);
+            optionPage = docsPage;
             break;
         case "exit":
         default:
