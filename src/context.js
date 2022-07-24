@@ -55,7 +55,7 @@ async function alert(title, message, buttons) {
     let width = process.stdout.columns;
     let height = process.stdout.rows;
 
-    let minWidth = 45;
+    let minWidth = 70;
 
     // Split the single lined message into multine on spaces if it exceeds minWidth
     let messageParts = [];
@@ -85,7 +85,7 @@ async function alert(title, message, buttons) {
         //
         display += "┌─" + title + "─".repeat(minWidth - (title.length + 4)) + "─┐\n";
         messageParts.forEach(part => {
-            display += "│ " + part + " ".repeat(minWidth - part.length - 4) + " │\n";
+            display += "│ " + part + " ".repeat(Math.max(0, minWidth - part.length - 4)) + " │\n";
         });
         let buttonsWidth = Math.round((minWidth - 4) / Math.min(4, buttons.length));
         display += "├" + "─".repeat(minWidth - 2) + "┤\n";

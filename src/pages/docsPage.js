@@ -2,7 +2,9 @@ import chalk from "chalk";
 import figlet from "figlet";
 import fs from "fs";
 
-export async function docsPage({ inquirer, buffer, readkey, consolekeys }) {
+let title = "";
+
+export async function docsPage({ inquirer, buffer, readkey, consolekeys, alert }) {
     /*
     figlet.defaults.fontPath = "../fonts/";
     let t = figlet.textSync("Menuify", {
@@ -10,6 +12,13 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys }) {
     });
     console.log(t);
     */
+
+    await alert(
+        "How to use",
+        "Use the left and right arrow keys to focus either the sidebar or content. Then use up and down to either navigate or scroll.",
+        ["Okay"]
+    );
+
     buffer.secondary();
     buffer.clear();
     process.stdout.write(consolekeys.hideCursor);
@@ -22,15 +31,15 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys }) {
     let sidebarFocused = false;
     let sidebarHighlightIndex = 0;
     let docFolder = fs.readdirSync(process.cwd() + "/src/docs");
-    let title = "";
 
-    let selectedDoc = 0;
-    let contentPath = process.cwd() + "/src/docs/" + docFolder[selectedDoc];
+    let selectedDoc = -1;
+    //let contentPath = process.cwd() + "/src/docs/" + docFolder[selectedDoc];
+    let contentPath = "";
     let selectedDocScroll = 0;
 
     while (loop) {
         console.clear();
-        let vh = process.stdout.rows - 1;
+        let vh = process.stdout.rows;
         let vw = process.stdout.columns;
         let grid = 1 / 4;
         let widths = [
@@ -104,11 +113,13 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys }) {
             bBuffer += tBuffer;
         }
 
-        console.log(bBuffer);
+        process.stdout.write(bBuffer);
 
         let rerender = false;
 
         while (!rerender) {
+            // curosr to 0, 0
+            process.stdout.write("\x1B[0;0f");
             let key = await readkey();
             switch (key) {
                 case consolekeys.left:
@@ -152,7 +163,10 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys }) {
                 case consolekeys.enter:
                     if (sidebarFocused) {
                         selectedDoc = sidebarHighlightIndex;
-                        contentPath = process.cwd() + "/src/docs/" + docFolder[selectedDoc];
+                        let docName = docFolder[selectedDoc];
+                        contentPath = process.cwd() + "/src/docs/" + docName;
+                        if (docName.endsWith(".md")) docName = docName.slice(0, -3);
+                        title = docName;
                         selectedDocScroll = 0;
                         rerender = true;
                     }
@@ -173,7 +187,7 @@ function getContent(width, height, { index, path }) {
     let cBuffer = [];
     if (index >= 0) {
         let doc = fs.readFileSync(path);
-        let rawLines = doc.toString().split("\n");
+        let rawLines = doc.toString().split(/\r?\n/);
         let docLines = [];
         rawLines.forEach(l => {
             if (l.length > width) {
@@ -302,6 +316,15 @@ function getContent(width, height, { index, path }) {
                     cBuffer.push(formattedLine);
             }
         });
+    } else {
+        cBuffer.push("Welcome to the Menuify Docs!".padEnd(width));
+        cBuffer.push("This documentation is made possible by:".padEnd(width));
+        cBuffer.push("Microart Documentation Viewer".padEnd(width));
+        cBuffer.push(null);
+        cBuffer.push("Use arrow keys to navigate".padEnd(width));
+        cBuffer.push("Up & Down: Scroll and navigate sidebar".padEnd(width));
+        cBuffer.push("Left & Right: Switch focus from sidebar to content".padEnd(width));
+        cBuffer.push("Use crtl-c or escape to leave.".padEnd(width));
     }
     return cBuffer;
 }
@@ -315,15 +338,25 @@ function getSidebar(width, height, { docFolder, focused, highlightIndex, selecte
     docFolder.forEach((doc, i) => {
         let docName = doc;
         if (docName.endsWith(".md")) docName = docName.slice(0, -3);
+
         if (focused && i === highlightIndex)
             docName = " " + docName;
+
         let docDisp = docName.padEnd(width);
-        if (i !== selectedDoc && i !== highlightIndex)
-            docDisp = chalk.gray(docDisp);
-        if (focused && i === highlightIndex)
-            docDisp = chalk.bgWhite.black.bold(docDisp);
-        if (i === selectedDoc)
-            docDisp = chalk.bold.italic(docDisp);
+
+        if (focused) {
+            if (i === highlightIndex)
+                docDisp = chalk.bgWhite.black.italic(docDisp);
+            else if (i === selectedDoc)
+                docDisp = chalk.italic(docDisp)
+            else
+                docDisp = chalk.gray(docDisp);
+        } else {
+            if (i === selectedDoc)
+                docDisp = chalk.bold.italic(docDisp);
+            else
+                docDisp = chalk.gray(docDisp);
+        }
         lBuffer.push(docDisp);
     });
 
