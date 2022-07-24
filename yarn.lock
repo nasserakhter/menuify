@@ -217,6 +217,11 @@ external-editor@^3.0.3:
     iconv-lite "^0.4.24"
     tmp "^0.0.33"
 
+figlet@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/figlet/-/figlet-1.5.2.tgz#dda34ff233c9a48e36fcff6741aeb5bafe49b634"
+  integrity sha512-WOn21V8AhyE1QqVfPIVxe3tupJacq1xGkPTB4iagT6o+P2cAgEOOwIxMftr4+ZCTI6d551ij9j61DFr0nsP2uQ==
+
 figures@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/figures/-/figures-4.0.1.tgz#27b26609907bc888b3e3b0ef5403643f80aa2518"

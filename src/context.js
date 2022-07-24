@@ -29,7 +29,8 @@ export async function show(func, props) {
         props,
         buffer,
         readkey,
-        alert
+        alert,
+        consolekeys
     };
     return await func(ctx);
 }

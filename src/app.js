@@ -6,9 +6,11 @@ import { editMenu } from "./pages/editMenu.js";
 import { importMenu } from "./pages/importMenu.js";
 import { exportMenu } from "./pages/exportMenu.js";
 import { storePage } from "./pages/storePage.js";
-import { folderpickerWizard } from "./wizards/folderpickerWizard.js";
+import { docsPage } from "./pages/docsPage.js";
 
 export async function startApp() {
+    await show(docsPage);
+    return;
     filesystem.initialize("/Users/nasserjaved/Downloads/menuify");
 
     let option = await show(mainMenu);
