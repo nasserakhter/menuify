@@ -11,8 +11,8 @@ This will allow you to enter a project name, which will be show shown on the win
 Next you will enter a project description, to be used to identify the project within Menuify (not used in windows, optional).
 After you will enter a target extension, which the context menu will appear on.
 
-```
-You can use the extension ALL (all caps) in order to show the context menu on every file type.
+```Side Note
+You can use the extension 'ALL' (all caps) in order to show the context menu on every file type.
 ```
 
 Next you will enter an icon, which will show up in the windows right click menu.

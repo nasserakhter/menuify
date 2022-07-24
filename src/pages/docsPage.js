@@ -308,9 +308,9 @@ function getContent(width, height, { index, path }) {
 
                 let formattedLine = line + " ".repeat(Math.max(0, width - line.realLength()));
                 if (isCodeBlock && isOuterCodeBlock)
-                    formattedLine = chalk.bgGray.white.underline(formattedLine);
+                    formattedLine = chalk.bgRgb(70,70,70).white.underline(formattedLine);
                 else if (isOuterCodeBlock || isCodeBlock)
-                    formattedLine = chalk.bgGray.white(formattedLine);
+                    formattedLine = chalk.bgRgb(70,70,70).white(formattedLine);
 
                 if (print)
                     cBuffer.push(formattedLine);
