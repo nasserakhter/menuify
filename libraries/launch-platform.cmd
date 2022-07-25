@@ -33,6 +33,15 @@ set MEM_FIX=false
 set INPUT_FIX=false
 set OUTPUT_FIX=false
 
+:: Resize windows
+mode con: cols=150 lines=45
+
 :: Launch with arguments
+
+:run
 node --no-warnings main.js
-pause
+echo Press any key to relaunch: 
+pause >nul
+cls
+echo Reloading...
+goto run

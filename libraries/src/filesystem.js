@@ -4,6 +4,7 @@ import { logVerbose } from './logger.js';
 import path from 'path';
 import getDownloadFolder from 'downloads-folder';
 import sanitize from 'sanitize-filename';
+import { unbindProject } from './binder.js';
 
 export default class filesystem {
 
@@ -85,5 +86,6 @@ export default class filesystem {
     static deleteProject(project) {
         logVerbose(`Deleting project '${project.name}'...`);
         fs.rmdirSync(path.join(filesystem.rootDir, project.id), { recursive: true });
+        unbindProject(project);
     }
 }

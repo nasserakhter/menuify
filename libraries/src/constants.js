@@ -6,5 +6,5 @@ export let constants = {
     developer: "Microart inc.",
     url: "https://microart.cf/showroom/menuify",
     splash: splash.raw,
-    
+    regkey: "HKCR/SystemFileAssociations",
 }

@@ -16,6 +16,7 @@ export async function cascadeMenuWizard({ inquirer, buffer }) {
         });
         loop = more;
     }
+    process.stdin.setRawMode(true);
     buffer.primary();
     return buttons;
 }
