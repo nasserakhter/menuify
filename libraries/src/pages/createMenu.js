@@ -34,6 +34,7 @@ export async function createMenu({ inquirer, v4 }) {
             message: "Do you want to add an icon image to this menu?:"
         }
     ]);
+    project.ext = project.ext.replace(/\./g, "");
     if (project.icon) {
         let icon = await show(filepickerWizard, { title: "Select an icon", filters: ["png", "jpg", "jpeg", "ico", "webp"] });
         project.icon = icon;

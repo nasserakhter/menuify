@@ -110,14 +110,31 @@ async function setupShrink({ inquirer }) {
     });
 
     let command = 'ffmpeg -i {filename}';
+    let first = true;
+    let info = "ffmpeg shrink";
     if (crf !== "none") {
         command += ` -crf ${crf}`;
+        if (first) {
+            info += ` -`;
+            first = false;
+        }
+        info += ` crf-${crf}`;
     }
     if (fps !== "none") {
         command += ` -vf "fps=${fps}"`;
+        if (first) {
+            info += ` -`;
+            first = false;
+        }
+        info += ` ${fps}fps`;
     }
     if (res !== "none") {
         command += ` -s ${res}`;
+        if (first) {
+            info += ` -`;
+            first = false;
+        }
+        info += ` ${res}`;
     }
     command += ` "{filenameWE}_shrunk.mp4"`;
 
@@ -142,5 +159,8 @@ async function setupShrink({ inquirer }) {
     if (!showOutput) {
         command += " -loglevel quiet";
     }
-    return command;
+    return {
+        command,
+        info
+    };
 }

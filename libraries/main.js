@@ -4,6 +4,7 @@ import { constants } from './src/constants.js';
 import chalk from 'chalk';
 
 console.clear();
+process.stdout.write("\x1B]0;Menuify\x07");
 console.log(chalk.cyan(constants.splash));
 console.log("");
 console.log(chalk.cyan(`${constants.name} v${constants.version.toFixed(1)} by ${constants.developer}`));

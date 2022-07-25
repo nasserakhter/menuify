@@ -1,4 +1,11 @@
 @echo off
+
+if not "%1"=="am_admin" (
+	echo Menuify requires administrator privelages to run
+	pause >nul
+	exit /b
+)
+
 :: Node Config
 set NODE_ENV=production
 
@@ -28,3 +35,4 @@ set OUTPUT_FIX=false
 
 :: Launch with arguments
 node --no-warnings main.js
+pause

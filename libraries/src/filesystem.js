@@ -12,7 +12,7 @@ export default class filesystem {
 
     constructor(project) {
         this.project = project;
-        this.projectDir = `${filesystem.rootDir}/${project.id}`;
+        this.projectDir = path.join(filesystem.rootDir, project.id);
     }
 
     ensureProjectWritable() {
@@ -31,14 +31,15 @@ export default class filesystem {
     writeFile(name, content) {
         this.ensureProjectWritable();
         logVerbose(`Writing file '${name}'...`);
-        fs.writeFileSync(`${this.projectDir}/${name}`, content);
-        return `${this.projectDir}/${name}`;
+        let p = path.join(this.projectDir, name);
+        fs.writeFileSync(p, content);
+        return p;
     }
 
     saveManifest() {
         this.ensureProjectWritable();
         logVerbose(`Saving manifest...`);
-        fs.writeFileSync(`${this.projectDir}/manifest.json`, JSON.stringify(this.project));
+        fs.writeFileSync(path.join(this.projectDir, "manifest.json"), JSON.stringify(this.project));
     }
 
     static rootDir = "";
@@ -72,9 +73,9 @@ export default class filesystem {
         let projects = [];
         fs.readdirSync(filesystem.rootDir).forEach(projectDir => {
             if (projectDir.match(filesystem.guidRegex) &&
-                fs.lstatSync(`${filesystem.rootDir}/${projectDir}`).isDirectory() &&
-                fs.existsSync(`${filesystem.rootDir}/${projectDir}/manifest.json`)) {
-                let project = JSON.parse(fs.readFileSync(`${filesystem.rootDir}/${projectDir}/manifest.json`));
+                fs.lstatSync(path.join(filesystem.rootDir, projectDir)).isDirectory() &&
+                fs.existsSync(path.join(filesystem.rootDir, projectDir, "manifest.json"))) {
+                let project = JSON.parse(fs.readFileSync(path.join(filesystem.rootDir, projectDir, "manifest.json")));
                 projects.push(project);
             }
         });
@@ -83,6 +84,6 @@ export default class filesystem {
 
     static deleteProject(project) {
         logVerbose(`Deleting project '${project.name}'...`);
-        fs.rmdirSync(`${filesystem.rootDir}/${project.id}`, { recursive: true });
+        fs.rmdirSync(path.join(filesystem.rootDir, project.id), { recursive: true });
     }
 }
