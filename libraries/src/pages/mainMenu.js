@@ -13,6 +13,7 @@ export async function mainMenu({ inquirer }) {
             { name: "Menuify Store", value: "store" },
             new inquirer.Separator(),
             { name: "Read the documentation", value: "docs" },
+            { name: "More options", value: "more" },
             { name: "Exit", value: "exit" },
             new inquirer.Separator()
         ]

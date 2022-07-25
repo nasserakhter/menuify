@@ -10,10 +10,13 @@ import { docsPage } from "./pages/docsPage.js";
 import { deleteMenu } from "./pages/deleteMenu.js";
 import getDownloadsFolder from 'downloads-folder';
 import path from 'path';
+import { moreMenu } from "./pages/moreMenu.js";
 
 export async function startApp() {
     process.stdin.setRawMode(true);
     filesystem.initialize(path.join(getDownloadsFolder() + "/menuify"));
+    await show(moreMenu);
+    return;
 
     let option = await show(mainMenu);
     let optionPage = null;
@@ -41,6 +44,9 @@ export async function startApp() {
         // Seperator
         case "docs":
             optionPage = docsPage;
+            break;
+        case "more":
+            optionPage = moreMenu;
             break;
         case "exit":
         default:

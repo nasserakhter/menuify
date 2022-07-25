@@ -5,6 +5,9 @@ import path from 'path';
 import getDownloadFolder from 'downloads-folder';
 import sanitize from 'sanitize-filename';
 import { unbindProject } from './binder.js';
+import Axios from 'axios';
+import ProgressBar from 'progress';
+import unzipper from 'unzipper';
 
 export default class filesystem {
 
@@ -61,6 +64,23 @@ export default class filesystem {
         }
     }
 
+    static writeRootFile(name, content) {
+        logVerbose(`Writing file '${name}'...`);
+        let p = path.join(filesystem.rootDir, name);
+        fs.writeFileSync(p, content);
+        return p;
+    }
+
+    static readRootFile(name) {
+        logVerbose(`Reading file '${name}'...`);
+        let p = path.join(filesystem.rootDir, name);
+        return fs.readFileSync(p);
+    }
+
+    static rootFileExists(name) {
+        return fs.existsSync(path.join(filesystem.rootDir, name));
+    }
+
     static exportProject(project, cPath) {
         logVerbose("Exporting project...");
         let json = JSON.stringify(project);
@@ -87,5 +107,64 @@ export default class filesystem {
         logVerbose(`Deleting project '${project.name}'...`);
         fs.rmdirSync(path.join(filesystem.rootDir, project.id), { recursive: true });
         unbindProject(project);
+    }
+
+    static async visualDownloadFile(url, name) {
+        return new Promise(async (resolve, reject) => {
+            let { data, headers } = await Axios({
+                url,
+                method: 'GET',
+                responseType: 'stream'
+            });
+            let totalLength = headers['content-length'];
+
+            let progressBar = new ProgressBar('-> downloading [:bar] :percent :etas', {
+                width: 40,
+                complete: '=',
+                incomplete: ' ',
+                renderThrottle: 1,
+                total: parseInt(totalLength)
+            });
+
+            let p = name;
+            let writer = fs.createWriteStream(p);
+
+            data.on('data', (chunk) => progressBar.tick(chunk.length));
+            data.pipe(writer);
+            data.on('end', () => {
+                resolve(p);
+            });
+        });
+    }
+
+    static visualExtractOneFileFromZip(file, name, regex) {
+        return new Promise((resolve, reject) => {
+            let sourcePath = file;
+            let targetPath = name;
+
+            let zipfileSize = fs.statSync(sourcePath).size;
+
+            let progressBar = new ProgressBar('-> extracting [:bar] :percent :etas', {
+                width: 40,
+                complete: '=',
+                incomplete: ' ',
+                renderThrottle: 1,
+                total: zipfileSize
+            });
+
+            fs.createReadStream(sourcePath)
+                .pipe(unzipper.ParseOne(regex))
+                .on('data', chunk => progressBar.tick(chunk.length))
+                .pipe(fs.createWriteStream(targetPath))
+                .on('close', () => {
+                    progressBar.tick(zipfileSize);
+                    resolve(targetPath);
+                });
+        });
+    }
+
+    static async httpGet(url) {
+        const { data } = await Axios(url);
+        return data;
     }
 }

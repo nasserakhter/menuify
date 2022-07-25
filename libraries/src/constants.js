@@ -7,4 +7,5 @@ export let constants = {
     url: "https://microart.cf/showroom/menuify",
     splash: splash.raw,
     regkey: "HKCR/SystemFileAssociations",
+    ffmpegReleasesEndpoint: "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest"
 }
