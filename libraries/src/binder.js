@@ -40,9 +40,26 @@ export async function bindButton(project, button, location) {
     };
     let result = await regedit.putValue(query);
     */
-    let rawRoot = `${constants.regkey}/.${project.ext}/shell`;
+    let fileAssoc = constants.regkey;
+    let fileAssocExt = `${fileAssoc}/.${project.ext}`;
+    let rawRoot = `${fileAssocExt}/shell`;
 
-    let extRoot = registry(rawRoot);
+    let extRoot;
+    try {
+        extRoot = registry(rawRoot);
+    } catch (err) {
+        // root does not contain shell key
+        let eroot;
+        try {
+            // root does not even exist
+            eroot = registry(fileAssocExt);
+        } catch (e) {
+            registry(fileAssoc).add("." + project.ext);
+            eroot = registry(fileAssocExt);
+        }
+        eroot.add('shell');
+        extRoot = registry(rawRoot);
+    }
     extRoot.add(project.id);
 
     let root = registry(`${rawRoot}/${project.id}`);
@@ -61,7 +78,22 @@ export async function bindButton(project, button, location) {
 
 export async function bindButtons(project, buttons) {
     let rawRoot = `${constants.regkey}/.${project.ext}/shell`;
-    let extRoot = registry(rawRoot);
+    let extRoot;
+    try {
+        extRoot = registry(rawRoot);
+    } catch (err) {
+        // root does not contain shell key
+        let eroot;
+        try {
+            // root does not even exist
+            eroot = registry(fileAssocExt);
+        } catch (e) {
+            registry(fileAssoc).add("." + project.ext);
+            eroot = registry(fileAssocExt);
+        }
+        eroot.add('shell');
+        extRoot = registry(rawRoot);
+    }
     extRoot.add(project.id);
 
     let root = registry(`${rawRoot}/${project.id}`);
