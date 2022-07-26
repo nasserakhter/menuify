@@ -3,8 +3,6 @@ import { show } from "../context.js";
 import FfmpegInterface from "../interface/ffmpegInterface.js";
 
 export async function moreMenu({ inquirer }) {
-    FfmpegInterface.installFfmpeg();
-    return;
     let { option } = await inquirer.prompt({
         type: "list",
         name: "option",
@@ -26,9 +24,19 @@ export async function moreMenu({ inquirer }) {
 async function ffmpegMenu({ inquirer }) {
     let isFfmpegInstalled = FfmpegInterface.isFfmpegInstalled();
     if (isFfmpegInstalled) {
+        console.log(chalk.green("FFmpeg is installed."));
+        let { install } = await inquirer.prompt({
+            type: "confirm",
+            name: "install",
+            message: "Do you want to redownload (and update, if possible)?"
+        });
+
+        if (install) {
+            FfmpegInterface.installFfmpeg();
+        }
     } else {
         console.log(chalk.red("FFmpeg is not currently installed."));
-        let {install} = await inquirer.prompt({
+        let { install } = await inquirer.prompt({
             type: "confirm",
             name: "install",
             message: "Would you like to install FFmpeg?"

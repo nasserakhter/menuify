@@ -27,6 +27,7 @@ export default class FfmpegInterface {
         console.log(chalk.yellow("Getting latest version..."));
         let githubReleases = await filesystem.httpGet(constants.ffmpegReleasesEndpoint);
         let ffmpegRelease = githubReleases.assets.find(release => release.name === "ffmpeg-master-latest-win64-lgpl.zip");
+
         let tmpFile = tmp.fileSync({ postfix: ".zip" });
         console.log(chalk.yellow("Downloading ffmpeg..."));
         await filesystem.visualDownloadFile(
@@ -34,7 +35,11 @@ export default class FfmpegInterface {
             tmpFile.name
         );
         console.log(chalk.yellow("Done."));
-        fs.mkdirSync(path.join(filesystem.rootDir, "ffmpeg"));
+
+        if (!fs.existsSync(path.join(filesystem.rootDir, "ffmpeg"))) {
+            fs.mkdirSync(path.join(filesystem.rootDir, "ffmpeg"));
+        }
+
         let ffmpeg = path.join(filesystem.rootDir, "ffmpeg", "ffmpeg.exe");
         console.log(chalk.yellow("Extracting ffmpeg..."));
         await filesystem.visualExtractOneFileFromZip(
@@ -52,6 +57,7 @@ export default class FfmpegInterface {
                     location: ffmpeg
                 };
                 filesystem.writeRootFile("ffmpeg.json", JSON.stringify(manifest));
+                console.log(chalk.green("Successfully installed ffmpeg v" + version));
             }
         } catch (e) {
             throw new MenuifyError("Failed to install ffmpeg.", 4012);

@@ -1,9 +1,10 @@
 import fs from 'fs';
 import getDownloadsFolder from 'downloads-folder';
-import path, { sep } from 'path';
+import path from 'path';
 import chalk from 'chalk';
 import consolekeys from '../consolekeys.js';
 import moment from 'moment';
+import { execSync } from 'child_process';
 
 let dispIndex = 0;
 
@@ -12,7 +13,8 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     buffer.clear();
     console.log(consolekeys.hideCursor);
 
-    let currentDirectory = getDownloadsFolder();
+    //let currentDirectory = getDownloadsFolder();
+    let currentDirectory = "E:";
     let highlighted = 0;
     let loop = true;
     let marginTop = 6;
@@ -26,6 +28,9 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     if (props && props.title) title = props.title;
 
     while (loop) {
+        if (currentDirectory.match(/^[A-Za-z]:$/)) {
+            currentDirectory += "\\";
+        }
         try {
             let files = getDirectoryFiles(currentDirectory, filters);
             //let nonHiddenIndexes = files.map((f,i) => {f.i = i; return f;}).filter(f => !f.hidden).map(f => f.i);
@@ -116,7 +121,10 @@ export async function filepickerWizard({ readkey, buffer, props }) {
                     break;
             }
         } catch (e) {
+            console.clear();
             console.log(e);
+            console.log("Press any key");
+            await readkey();
             loop = false;
         }
     }
@@ -126,54 +134,84 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     return selectedFile;
 }
 
+function getDrives() {
+    return execSync('wmic logicaldisk get name')
+        .toString()
+        .split('\r\r\n')
+        .filter(value => /[A-Za-z]:/.test(value))
+        .map(value => value.trim() + "\\");
+}
+
 function getDirectoryFiles(directory, filters) {
-    let files = fs.readdirSync(directory);
+    let files = [];
     let result = [];
-    files.forEach(file => {
-        if (file) {
-            let filePath = directory + "/" + file;
-            let extension = path.extname(file);
-            let stat = fs.lstatSync(filePath);
-            let isDirectory = stat.isDirectory();
-            let allow = false;
-            if (filters.length > 0) {
-                if (filters.includes(extension.replaceAll(".", ""))) {
-                    allow = true;
+    if (directory === "/") {
+        files = getDrives();
+        files.forEach(drive => {
+            result.push({
+                name: drive,
+                path: drive,
+                hidden: false,
+                modified: moment(),
+                isDirectory: true
+            });
+        });
+    } else {
+        files = fs.readdirSync(directory);
+        files.forEach(file => {
+            try {
+                if (file) {
+                    let filePath = path.join(directory, file);
+                    let extension = path.extname(file);
+                    let stat = fs.lstatSync(filePath);
+                    let isDirectory = stat.isDirectory();
+                    let allow = false;
+                    if (filters.length > 0) {
+                        if (filters.includes(extension.replaceAll(".", ""))) {
+                            allow = true;
+                        }
+                    } else {
+                        allow = true;
+                    }
+                    if (isDirectory) allow = true;
+                    if (file === ".DS_Store") allow = false;
+                    if (allow) {
+                        /*
+                        let stat = fs.statSync(filePath);
+                        let isDirectory = stat.isDirectory();
+                        let size = stat.size;
+                        le t  modified = moment(stat.mtime);
+                        */
+                        let size = stat.size;
+                        let modified = moment(stat.mtime);
+                        let hidden = file.startsWith(".");
+                        result.push({
+                            name: file,
+                            path: filePath,
+                            extension,
+                            isDirectory,
+                            size,
+                            modified,
+                            hidden
+                        });
+                    }
                 }
-            } else {
-                allow = true;
-            }
-            if (isDirectory) allow = true;
-            if (file === ".DS_Store") allow = false;
-            if (allow) {
-                /*
-                let stat = fs.statSync(filePath);
-                let isDirectory = stat.isDirectory();
-                let size = stat.size;
-                le t  modified = moment(stat.mtime);
-                */
-                let size = stat.size;
-                let modified = moment(stat.mtime);
-                let hidden = file.startsWith(".");
-                result.push({
-                    name: file,
-                    path: filePath,
-                    extension,
-                    isDirectory,
-                    size,
-                    modified,
-                    hidden
-                });
-            }
-        }
-    });
+            } catch (e) { }
+        });
+    }
     return result;
 }
 
 function getParentDirectory(directory) {
-    let dir = directory.substring(0, directory.lastIndexOf(path.sep));
-    dir = dir === "" ? "/" : dir;
-    return dir;
+    let k = "";
+    if (directory.match(/^[A-Za-z]:\\$/)) {
+        k = "/";
+    } else {
+        let dir = directory.substring(0, directory.lastIndexOf(path.sep));
+        dir = dir === "" ? "/" : dir;
+        k = dir;
+    }
+    return k;
 }
 
 function render(files, { highlighted, marginTop, showHidden, directory, filters, title }) {
