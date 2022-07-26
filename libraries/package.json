@@ -8,7 +8,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node --no-warnings main.js"
+    "start": "node --no-warnings main.js",
+    "build": "__dev_build.cmd"
   },
   "dependencies": {
     "axios": "^0.27.2",
