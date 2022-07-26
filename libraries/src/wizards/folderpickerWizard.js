@@ -8,7 +8,7 @@ import { execSync } from 'child_process';
 
 let dispIndex = 0;
 
-export async function folderpickerWizard({ readkey, alert, buffer, props }) {
+export async function folderpickerWizard({ readkey, alert, buffer, props, cursor }) {
 
     await alert(
         "How to use",
@@ -18,7 +18,7 @@ export async function folderpickerWizard({ readkey, alert, buffer, props }) {
 
     buffer.secondary();
     buffer.clear();
-    console.log(consolekeys.hideCursor);
+    cursor.hide();
 
     let currentDirectory = getDownloadsFolder();
     //let currentDirectory = "E:";
@@ -52,7 +52,7 @@ export async function folderpickerWizard({ readkey, alert, buffer, props }) {
                 filters
             });
 
-            process.stdout.write("\x1B[0;0f");
+            cursor.home();
             let key = await readkey();
 
             switch (key) {
@@ -132,7 +132,7 @@ export async function folderpickerWizard({ readkey, alert, buffer, props }) {
     }
 
     buffer.primary();
-    console.log(consolekeys.showCursor);
+    cursor.show();
     return selectedFile ?? currentDirectory;
 }
 

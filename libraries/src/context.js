@@ -21,6 +21,36 @@ const buffer = {
     isPrimary: true
 }
 
+const cursor = {
+    home: () => {
+        process.stdout.write("\x1B[0;0f");
+    },
+    set: (x, y) => {
+        process.stdout.write(`\x1B[${y};${x}H`);
+    },
+    hide: () => {
+        process.stdout.write(consolekeys.hideCursor);
+    },
+    show: () => {
+        process.stdout.write(consolekeys.showCursor);
+    },
+    move: (dx, dy) => {
+        let data = "";
+        if (dx < 0) {
+            data += `\x1b${-dx}D`;
+        } else if (dx > 0) {
+            data += `\x1b${dx}C`;
+        }
+
+        if (dy < 0) {
+            data += `\x1b${-dy}A`;
+        } else if (dy > 0) {
+            data += `\x1b${dy}B`;
+        }
+        process.stdout.write(data);
+    }
+}
+
 export async function show(func, props) {
     let ctx = {
         inquirer,
@@ -30,7 +60,8 @@ export async function show(func, props) {
         buffer,
         readkey,
         alert,
-        consolekeys
+        consolekeys,
+        cursor
     };
     return await func(ctx);
 }
@@ -63,7 +94,7 @@ async function alert(title, message, buttons) {
         let words = message.split(" ");
         let currentLine = "";
         for (let i = 0; i < words.length; i++) {
-            if (currentLine.length + words[i].length + 1 >= minWidth - 1) {
+            if (currentLine.length + words[i].length + 1 >= minWidth - 2) {
                 messageParts.push(currentLine);
                 currentLine = "";
             }

@@ -4,7 +4,7 @@ import fs from "fs";
 
 let title = "";
 
-export async function docsPage({ inquirer, buffer, readkey, consolekeys, alert }) {
+export async function docsPage({ inquirer, buffer, readkey, consolekeys, alert, cursor }) {
     /*
     figlet.defaults.fontPath = "../fonts/";
     let t = figlet.textSync("Menuify", {
@@ -21,7 +21,7 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys, alert }
 
     buffer.secondary();
     buffer.clear();
-    process.stdout.write(consolekeys.hideCursor);
+    cursor.hide();
     let loop = true;
 
     String.prototype.realLength = function () {
@@ -119,7 +119,7 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys, alert }
 
         while (!rerender) {
             // curosr to 0, 0
-            process.stdout.write("\x1B[0;0f");
+            cursor.home();
             let key = await readkey();
             switch (key) {
                 case consolekeys.left:
@@ -180,7 +180,7 @@ export async function docsPage({ inquirer, buffer, readkey, consolekeys, alert }
     }
 
     buffer.primary();
-    console.log(consolekeys.showCursor);
+    cursor.show();
 }
 
 function getContent(width, height, { index, path }) {

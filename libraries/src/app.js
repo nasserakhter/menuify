@@ -16,6 +16,9 @@ export async function startApp() {
     process.stdin.setRawMode(true);
     filesystem.initialize(path.join(getDownloadsFolder() + "/menuify"));
 
+    await show(storePage);
+    return;
+
     let option = await show(mainMenu);
     let optionPage = null;
 

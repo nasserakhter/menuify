@@ -8,10 +8,10 @@ import { execSync } from 'child_process';
 
 let dispIndex = 0;
 
-export async function filepickerWizard({ readkey, buffer, props }) {
+export async function filepickerWizard({ readkey, buffer, props, cursor }) {
     buffer.secondary();
     buffer.clear();
-    console.log(consolekeys.hideCursor);
+    cursor.hide();
 
     let currentDirectory = getDownloadsFolder();
     //let currentDirectory = "E:";
@@ -23,6 +23,8 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     let selectedFile = null;
     let filters = [];
     let title = "";
+
+    // crtlf = \x06
 
     if (props && props.filters) filters = props.filters;
     if (props && props.title) title = props.title;
@@ -47,7 +49,7 @@ export async function filepickerWizard({ readkey, buffer, props }) {
                 filters,
                 title
             });
-            process.stdout.write("\x1B[0;0f");
+            cursor.home();
             let key = await readkey();
 
             switch (key) {
@@ -130,7 +132,7 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     }
 
     buffer.primary();
-    console.log(consolekeys.showCursor);
+    cursor.show();
     return selectedFile;
 }
 
