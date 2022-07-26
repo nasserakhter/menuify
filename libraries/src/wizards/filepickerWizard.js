@@ -13,8 +13,8 @@ export async function filepickerWizard({ readkey, buffer, props }) {
     buffer.clear();
     console.log(consolekeys.hideCursor);
 
-    //let currentDirectory = getDownloadsFolder();
-    let currentDirectory = "E:";
+    let currentDirectory = getDownloadsFolder();
+    //let currentDirectory = "E:";
     let highlighted = 0;
     let loop = true;
     let marginTop = 6;

@@ -20,8 +20,8 @@ export async function folderpickerWizard({ readkey, alert, buffer, props }) {
     buffer.clear();
     console.log(consolekeys.hideCursor);
 
-    //let currentDirectory = getDownloadsFolder();
-    let currentDirectory = "E:";
+    let currentDirectory = getDownloadsFolder();
+    //let currentDirectory = "E:";
     let highlighted = 0;
     let loop = true;
     let marginTop = 6;
