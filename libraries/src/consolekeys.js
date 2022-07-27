@@ -112,4 +112,5 @@ export default class ConsoleKeys {
     static clear = this.escape + '[H' + this.escape + '[2J';
     static bufferSecondary = this.escape + '[?1049h';
     static bufferPrimary = this.escape + '[?1049l';
+    static resize = this.escape + '[250;'; // Custom property, not real escape sequence
 }

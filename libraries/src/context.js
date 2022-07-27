@@ -66,7 +66,7 @@ export async function show(func, props) {
     return await func(ctx);
 }
 
-async function readkey() {
+async function readkey(triggerResize) {
     process.stdin.setRawMode(true);
     process.stdin.resume();
     return new Promise(resolve => {
@@ -75,6 +75,13 @@ async function readkey() {
             process.stdin.pause();
             resolve(data.toString());
         });
+        if (triggerResize) {
+            process.stdout.once('resize', () => {
+                process.stdin.setRawMode(false);
+                process.stdin.pause();
+                resolve(consolekeys.resize);
+            });
+        }
     });
 }
 
