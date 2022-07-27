@@ -62,6 +62,17 @@ async function renderContent(width, height, featuredMenus) {
     return rBuffer;
 }
 
+function realSubstring(str, start, end) {
+    let escapeRegex = /\x1B\[[0-9;]*?m(?:DA)*/g;
+    let text = str.replaceAll(escapeRegex, "");
+    let truncated = text.substring(start, end);
+    console.dir(text)
+    console.dir(truncated)
+    console.dir(str)
+    console.dir(str.replace(text, truncated))
+    return str.replaceAll(text, truncated);
+}
+
 async function renderWindow({ height, width }, cBuffer) {
     /*
 ╭──────────╮
@@ -98,7 +109,7 @@ async function renderWindow({ height, width }, cBuffer) {
         } else {
             let content = cBuffer[y - 3];
             if (y > 2 && content) {
-                content = content.toString().substring(0, width - 2);
+                content = realSubstring(content, 0, 2);
                 bBuffer += "│" + content + "│";
             } else {
                 bBuffer += "│" + " ".repeat(width - 2) + "│";
@@ -111,7 +122,7 @@ async function renderWindow({ height, width }, cBuffer) {
         rBuffer += " ".repeat(x) + bBuffer;
     }
 
-    process.stdout.write(rBuffer);
+    //process.stdout.write(rBuffer);
 }
 
 function getFeaturedMenus() {
