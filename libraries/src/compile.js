@@ -42,6 +42,9 @@ function processButtonTriggers(project, button, projectfs) {
         // Since this is an executable command, we need to make sure to compile it to a cmd file.
         logVerbose(`Compiling button action for ${button.id}`);
         absLocation = projectfs.writeFile(button.id + ".cmd", compileCommand(button.action));
+    } else if (button.type === "program") {
+        logVerbose(`Compiling program action trigger for ${button.id}`);
+        absLocation = button.action.program;
     }
     return absLocation;
 }

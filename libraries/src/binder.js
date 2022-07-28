@@ -72,7 +72,7 @@ export async function bindButton(project, button, location) {
 
     let command = registry(`${rawRoot}/${project.id}/command`);
 
-    command.add('(Default)', `"${location}" "%1%"`);
+    command.add('(Default)', `"${location}" %*%`);
     return true;
 }
 

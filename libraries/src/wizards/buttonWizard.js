@@ -1,6 +1,7 @@
 import { show } from "../context.js";
 import { ffmpegWizard } from "./ffmpegWizard.js";
 import { v4 } from "uuid";
+import { filepickerWizard } from "./filepickerWizard.js";
 
 export async function buttonWizard({ inquirer, props, buffer, box }) {
     let cascade = props.cascade ?? true;
@@ -41,6 +42,18 @@ export async function buttonWizard({ inquirer, props, buffer, box }) {
         case "ffmpeg":
             button.type = "command";
             button.action = await show(ffmpegWizard, { switchToPrimary: false });
+            break;
+        case "program":
+            button.type = "program";
+            let { program } = await inquirer.prompt({
+                type: "input",
+                name: "program",
+                message: "Enter the path to the program: "
+            });
+            button.action = {
+                program,
+                info: program
+            };
             break;
     }
 

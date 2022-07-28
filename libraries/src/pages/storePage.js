@@ -147,15 +147,17 @@ async function renderContent({ width, height, featuredMenus, focus, vfocus, sear
     let textDisplay;
 
     if (editSearchBox) {
-        if (searchInput.length > minSearchWidth - 2) {
+        if (searchInput.length > minSearchWidth - 3) {
             searchInput = "\u2026" + searchInput.slice(Math.max(0, searchInput.length - (minSearchWidth - 4)));
         }
         if (focus === 0 && vfocus === 0) {
             textDisplay = chalk.underline.yellow(searchInput);
-            textDisplay += chalk.yellow("\u258f");
+            textDisplay += chalk.yellow(/*"\u258f"*/"|");
         }
     } else {
-        searchInput = searchInput.substring(0, minSearchWidth - 4);
+        if (searchInput.length > minSearchWidth - 3) {
+            searchInput = searchInput.substring(0, minSearchWidth - 4) + "\u2026";
+        }
         if (focus === 0 && vfocus === 0) {
             textDisplay = chalk.cyan(searchInput);
         } else {
@@ -192,7 +194,7 @@ async function renderContent({ width, height, featuredMenus, focus, vfocus, sear
         let marginLeft = Math.ceil(unused / 2);
         let marginRight = Math.floor(unused / 2);
 
-        let spacer = " ".repeat(padding + max + padding - 2);
+        let spacer = " ".repeat(padding + max + padding);
         let ogSpacer = spacer;
 
         name = name + " ".repeat(Math.max(0, max - name.realLength()));
@@ -203,16 +205,11 @@ async function renderContent({ width, height, featuredMenus, focus, vfocus, sear
         desc = " ".repeat(padding) + desc + " ".repeat(padding);
         btns = " ".repeat(padding) + btns + " ".repeat(padding);
 
-
-        let spacerT = " ".repeat(marginLeft) + " " + spacer + " " + " ".repeat(marginRight);
-        let spacerB = " ".repeat(marginLeft) + " " + spacer + " " + " ".repeat(marginRight);
-
         if (i === highlight) {
             name = chalk.bgWhite.black(name);
             desc = chalk.bgWhite.black(desc);
             btns = chalk.bgWhite.black(btns);
-            spacerT = " ".repeat(marginLeft) + "▟" + chalk.bgWhite.black(spacer) + "▙" + " ".repeat(marginRight);
-            spacerB = " ".repeat(marginLeft) + "▜" + chalk.bgWhite.black(spacer) + "▛" + " ".repeat(marginRight);
+            spacer = chalk.bgWhite.black(spacer);
         }
 
         name = " ".repeat(marginLeft) + name + " ".repeat(marginRight);
@@ -220,17 +217,18 @@ async function renderContent({ width, height, featuredMenus, focus, vfocus, sear
         btns = " ".repeat(marginLeft) + btns + " ".repeat(marginRight);
 
 
-        spacer = " ".repeat(marginLeft) + " " + spacer + " " + " ".repeat(marginRight);
+        spacer = " ".repeat(marginLeft - 1) + " " + spacer + " " + " ".repeat(marginRight - 1);
+        ogSpacer = " ".repeat(marginLeft - 1) + " " + ogSpacer + " " + " ".repeat(marginRight - 1);
 
-        tBuffer.push(s(spacerT, width));
+        tBuffer.push(s(spacer, width));
         tBuffer.push(s(name, width));
         tBuffer.push(s(desc, width));
         tBuffer.push(s(btns, width));
-        tBuffer.push(s(spacerB, width));
+        tBuffer.push(s(spacer, width));
         if (i !== highlight)
             tBuffer.push(" ".repeat(marginLeft + padding) + "-".repeat(max) + " ".repeat(marginRight + padding));
         else
-            tBuffer.push(s(spacer, width));
+            tBuffer.push(s(ogSpacer, width));
 
         rBuffer = rBuffer.concat(tBuffer);
     });
@@ -346,10 +344,10 @@ async function waitVisual(speed = 100, length = 2000, { text, cursor, readkey, c
     let loading = true;
 
     let animIndex = 0;
-    //let animFrames = ['|', '/', '-', '\\'];
+    let animFrames = ['|', '/', '-', '\\'];
     // alt does not uses slashes, instead it uses fancy unicode characters
     // braille anim frames
-    let animFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    //let animFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
     let counter;
 
