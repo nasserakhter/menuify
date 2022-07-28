@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-export async function storePage({ buffer, alert, cursor, readkey, consolekeys }) {
+export async function storePage({ inquirer, buffer, alert, cursor, readkey, consolekeys }) {
     //await alert("Disclaimer", "Current menu's do not support downloading dependencies, if a menu requires a certain program to be installed, you must install it yourself. Note: This store is currently in beta, you may experience bugs and or other flaws.", ["Okay"]);
 
     String.prototype.realLength = function () {
@@ -9,25 +9,55 @@ export async function storePage({ buffer, alert, cursor, readkey, consolekeys })
     buffer.secondary();
     buffer.clear();
 
-    /*await waitVisual(100, 3000, {
-        cursor, readkey, consolekeys
-    });*/
+    await waitVisual(100, 800, {
+        cursor, readkey, consolekeys, text: "Loading store page"
+    });
     buffer.clear();
 
     let featuredMenus = getFeaturedMenus();
     let isRunning = true;
+    let highlight = featuredMenus.length > 0 ? 1 : 0;
+
+    let vfocus = 0;
+    let vfocusMin = 0;
+    let vfocusMax = 1;
+
+    let searchInput = "Search...";
+    let searchInputFirstTime = true;
+
+    let editSearchBox = false;
+    let performSearch = false;
+
+    let sortBy = "";
 
     while (isRunning) {
         buffer.clear();
         let vw = process.stdout.columns;
         let vh = process.stdout.rows;
-        let width = Math.min(200, vw);
+        let width = Math.min(100, vw);
         let height = Math.min(50, vh);
 
         let cWidth = Math.max(0, width - 2);
         let cHeight = Math.max(0, height - 4);
 
-        let cBuffer = await renderContent(cWidth, cHeight, featuredMenus);
+        if (performSearch) {
+            performSearch = false;
+            await waitVisual(100, 300, {
+                cursor, readkey, consolekeys, text: "Searching, please wait..."
+            });
+            buffer.clear();
+            highlight = 1;
+        }
+
+        let cBuffer = await renderContent({
+            width: cWidth,
+            height: cHeight,
+            featuredMenus,
+            focus: highlight,
+            vfocus,
+            searchInput,
+            editSearchBox
+        });
         await renderWindow({
             buffer, cursor, readkey, consolekeys, width, height
         }, cBuffer);
@@ -37,6 +67,62 @@ export async function storePage({ buffer, alert, cursor, readkey, consolekeys })
         switch (key) {
             case consolekeys.sigint:
                 isRunning = false;
+                break;
+            case consolekeys.down:
+                highlight = Math.min(featuredMenus.length, highlight + 1);
+                editSearchBox = false;
+                break;
+            case consolekeys.up:
+                highlight = Math.max(0, highlight - 1);
+                editSearchBox = false;
+                break;
+            case consolekeys.left:
+                vfocus = Math.max(vfocusMin, vfocus - 1);
+                editSearchBox = false;
+                break;
+            case consolekeys.right:
+                vfocus = Math.min(vfocusMax, vfocus + 1);
+                editSearchBox = false;
+                break;
+            case consolekeys.enter:
+                if (highlight === 0) {
+                    if (vfocus === 0) {
+                        if (editSearchBox) {
+                            editSearchBox = false;
+                            performSearch = true;
+                        } else {
+                            editSearchBox = true;
+                            if (searchInputFirstTime) {
+                                searchInputFirstTime = false;
+                                searchInput = "";
+                            }
+                        }
+                    } else if (vfocus === 1) {
+                        buffer.clear();
+                        let { sort } = await inquirer.prompt({
+                            type: "list",
+                            name: "sort",
+                            message: "Sort by:",
+                            choices: [
+                                { name: "Name", value: "name" },
+                                { name: "Extension", value: "ext" },
+                                { name: "Cascading", value: "cascade" }
+                            ]
+                        });
+                        sortBy = sort;
+                    }
+                }
+                break;
+            default:
+                if (key.match(/^[a-zA-Z0-9 ]$/) || key === consolekeys.backspaceWin) {
+                    if (editSearchBox) {
+                        if (key === consolekeys.backspaceWin) {
+                            searchInput = searchInput.substring(0, searchInput.length - 1);
+                        } else {
+                            searchInput += key;
+                        }
+                    }
+                }
                 break;
         }
     }
@@ -51,27 +137,114 @@ function s(str, wid) {
     return str + " ".repeat(Math.max(0, wid - length));
 }
 
-async function renderContent(width, height, featuredMenus) {
+async function renderContent({ width, height, featuredMenus, focus, vfocus, searchInput, editSearchBox }) {
     let rBuffer = [];
+    //let minSearchWidth = Math.max(25, searchInput.realLength());
+    let minSearchWidth = 25;
 
-    rBuffer.push(s(chalk.cyan.bold("yooo"), width));
-    for (let i = 0; i < featuredMenus.length; i++) {
+    // unicode elipsis: \u2026
 
+    let textDisplay;
+
+    if (editSearchBox) {
+        if (searchInput.length > minSearchWidth - 2) {
+            searchInput = "\u2026" + searchInput.slice(Math.max(0, searchInput.length - (minSearchWidth - 4)));
+        }
+        if (focus === 0 && vfocus === 0) {
+            textDisplay = chalk.underline.yellow(searchInput);
+            textDisplay += chalk.yellow("\u258f");
+        }
+    } else {
+        searchInput = searchInput.substring(0, minSearchWidth - 4);
+        if (focus === 0 && vfocus === 0) {
+            textDisplay = chalk.cyan(searchInput);
+        } else {
+            textDisplay = searchInput;
+        }
+    }
+
+    let textBoxT = "╭" + "─".repeat(minSearchWidth) + "╮";
+    let textBoxM = "│ø" + " " + textDisplay + " ".repeat(Math.max(0, minSearchWidth - 2 - textDisplay.realLength())) + "│";
+    let textBoxB = "╰" + "─".repeat(minSearchWidth) + "╯";
+
+    textBoxM += " ";
+    let filterDisp = "\u25bc" + " Filters";
+    if (focus === 0 && vfocus === 1) filterDisp = chalk.cyan(filterDisp);
+    textBoxM += filterDisp;
+
+    rBuffer.push(s(textBoxT, width));
+    rBuffer.push(s(textBoxM, width));
+    rBuffer.push(s(textBoxB, width));
+    rBuffer.push(s("", width));
+
+    let highlight = focus - 1;
+
+    featuredMenus.forEach((menu, i) => {
+        let tBuffer = [];
+        let name = s(menu.name, 20) + " | " + menu.ext + " " + chalk.gray(menu.id);
+        let desc = menu.description;
+        let btns = "Contains " + menu.buttons.length + " button" + (menu.buttons.length === 1 ? "" : "s");
+        let max = Math.max(name.realLength(), desc.realLength(), btns.realLength());
+        let padding = 1;
+
+        let unused = Math.min(max, width - max - (padding * 2));
+
+        let marginLeft = Math.ceil(unused / 2);
+        let marginRight = Math.floor(unused / 2);
+
+        let spacer = " ".repeat(padding + max + padding - 2);
+        let ogSpacer = spacer;
+
+        name = name + " ".repeat(Math.max(0, max - name.realLength()));
+        desc = desc + " ".repeat(Math.max(0, max - desc.realLength()));
+        btns = btns + " ".repeat(Math.max(0, max - btns.realLength()));
+
+        name = " ".repeat(padding) + name + " ".repeat(padding);
+        desc = " ".repeat(padding) + desc + " ".repeat(padding);
+        btns = " ".repeat(padding) + btns + " ".repeat(padding);
+
+
+        let spacerT = " ".repeat(marginLeft) + " " + spacer + " " + " ".repeat(marginRight);
+        let spacerB = " ".repeat(marginLeft) + " " + spacer + " " + " ".repeat(marginRight);
+
+        if (i === highlight) {
+            name = chalk.bgWhite.black(name);
+            desc = chalk.bgWhite.black(desc);
+            btns = chalk.bgWhite.black(btns);
+            spacerT = " ".repeat(marginLeft) + "▟" + chalk.bgWhite.black(spacer) + "▙" + " ".repeat(marginRight);
+            spacerB = " ".repeat(marginLeft) + "▜" + chalk.bgWhite.black(spacer) + "▛" + " ".repeat(marginRight);
+        }
+
+        name = " ".repeat(marginLeft) + name + " ".repeat(marginRight);
+        desc = " ".repeat(marginLeft) + desc + " ".repeat(marginRight);
+        btns = " ".repeat(marginLeft) + btns + " ".repeat(marginRight);
+
+
+        spacer = " ".repeat(marginLeft) + " " + spacer + " " + " ".repeat(marginRight);
+
+        tBuffer.push(s(spacerT, width));
+        tBuffer.push(s(name, width));
+        tBuffer.push(s(desc, width));
+        tBuffer.push(s(btns, width));
+        tBuffer.push(s(spacerB, width));
+        if (i !== highlight)
+            tBuffer.push(" ".repeat(marginLeft + padding) + "-".repeat(max) + " ".repeat(marginRight + padding));
+        else
+            tBuffer.push(s(spacer, width));
+
+        rBuffer = rBuffer.concat(tBuffer);
+    });
+
+    if (featuredMenus.length === 0) {
+        rBuffer.push(" ".repeat(width));
+        let text = chalk.red("No menu's found");
+        let marginLeft = Math.floor((width - text.realLength()) / 2);
+        rBuffer.push(s(" ".repeat(marginLeft) + text, width));
     }
 
     return rBuffer;
 }
 
-function realSubstring(str, start, end) {
-    let escapeRegex = /\x1B\[[0-9;]*?m(?:DA)*/g;
-    let text = str.replaceAll(escapeRegex, "");
-    let truncated = text.substring(start, end);
-    console.dir(text)
-    console.dir(truncated)
-    console.dir(str)
-    console.dir(str.replace(text, truncated))
-    return str.replaceAll(text, truncated);
-}
 
 async function renderWindow({ height, width }, cBuffer) {
     /*
@@ -80,9 +253,14 @@ async function renderWindow({ height, width }, cBuffer) {
 ├──────────┤
 ╰──────────╯
     */
-    let minimize = "-";
-    let maximize = "\u25A1";
-    let close = "x";
+    let minimize = " ";
+    let maximize = " ";
+    let close = " ";
+    if (false) {
+        minimize = "-";
+        maximize = "\u25A1";
+        close = "x";
+    }
 
     let vw = process.stdout.columns;
     let vh = process.stdout.rows;
@@ -109,7 +287,6 @@ async function renderWindow({ height, width }, cBuffer) {
         } else {
             let content = cBuffer[y - 3];
             if (y > 2 && content) {
-                content = realSubstring(content, 0, 2);
                 bBuffer += "│" + content + "│";
             } else {
                 bBuffer += "│" + " ".repeat(width - 2) + "│";
@@ -122,7 +299,7 @@ async function renderWindow({ height, width }, cBuffer) {
         rBuffer += " ".repeat(x) + bBuffer;
     }
 
-    //process.stdout.write(rBuffer);
+    process.stdout.write(rBuffer);
 }
 
 function getFeaturedMenus() {
@@ -165,7 +342,7 @@ function getFeaturedMenus() {
     ];
 }
 
-async function waitVisual(speed = 100, length = 2000, { cursor, readkey, consolekeys }) {
+async function waitVisual(speed = 100, length = 2000, { text, cursor, readkey, consolekeys }) {
     let loading = true;
 
     let animIndex = 0;
@@ -174,9 +351,12 @@ async function waitVisual(speed = 100, length = 2000, { cursor, readkey, console
     // braille anim frames
     let animFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
+    let counter;
+
     let f = (key) => {
         if (key === consolekeys.sigint) {
             loading = false;
+            clearTimeout(counter);
         } else {
             readkey().then(f);
         }
@@ -184,15 +364,23 @@ async function waitVisual(speed = 100, length = 2000, { cursor, readkey, console
 
     readkey().then(f);
 
-    setTimeout(() => {
+    counter = setTimeout(() => {
         loading = false;
     }, length);
+
+    let vw = process.stdout.columns;
+    let vh = process.stdout.rows;
+
+    text = text || "Loading";
 
     while (loading) {
         cursor.home();
         cursor.hide();
         let anim = animFrames[animIndex];
-        process.stdout.write(chalk.cyan(anim + " Contacting Microart servers"));
+        let marginLeft = Math.floor((vw / 2) - ((text.realLength() + 2) / 2));
+        let marginTop = Math.floor((vh / 2) + 1);
+        cursor.set(marginLeft, marginTop);
+        process.stdout.write(chalk.cyan(anim + " " + text));
         await new Promise(resolve => setTimeout(resolve, speed));
 
         if (animIndex >= animFrames.length - 1) {
