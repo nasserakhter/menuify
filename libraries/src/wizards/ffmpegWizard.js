@@ -15,6 +15,7 @@ export async function ffmpegWizard({ inquirer, buffer, box, props }) {
             { name: "Convert a video to another video format (mp4 -> mov, avi, gif, etc.)", value: "vid2vid" },
             { name: "Convert a video to an audio format (mp4 -> mp3, wav, m4v, etc.)", value: "vid2aud" },
             { name: "Shrink and compress a video format (mp4 -> smaller mp4)", value: "shrink" },
+            { name: "Cut or trim the video to a specified length (mp4 -> short mp4)", value: "cut" },
             new inquirer.Separator(),
             { name: "Custom", value: "custom" }
         ]
@@ -26,10 +27,104 @@ export async function ffmpegWizard({ inquirer, buffer, box, props }) {
         case "shrink":
             command = await setupShrink({ inquirer });
             break;
+        case "cut":
+            command = await setupCut({ inquirer });
+            break;
     }
 
     if (props.switchToPrimary ?? true) buffer.primary();
     return command;
+}
+
+async function setupCut({ inquirer }) {
+    let { length } = await inquirer.prompt({
+        type: "list",
+        name: "length",
+        message: "Choose time value",
+        choices: [
+            { name: "3 seconds", value: 3 },
+            { name: "5 seconds", value: 5 },
+            { name: "10 seconds", value: 10 },
+            { name: "15 seconds", value: 15 },
+            { name: "20 seconds", value: 20 },
+            { name: "30 seconds", value: 30 },
+            new inquirer.Separator(),
+            { name: "Custom", value: "custom" }
+        ]
+    });
+    if (length === "custom") {
+        let { customLength } = await inquirer.prompt({
+            type: "input",
+            name: "customLength",
+            message: "Enter the time amount:"
+        });
+        length = customLength;
+    }
+    length = parseInt(length);
+
+    let { cutOrKeep } = await inquirer.prompt({
+        type: "list",
+        name: "cutOrKeep",
+        message: `Do you want to cut or keep ${length} seconds of the video?`,
+        choices: [
+            { name: "Cut", value: "cut" },
+            { name: "Keep", value: "keep" }
+        ]
+    });
+
+    let positionChoices = [
+        { name: "Start", value: "start" }
+    ];
+    if (cutOrKeep === "keep") {
+        positionChoices.push({ name: "End", value: "end" });
+    }
+
+    let { position } = await inquirer.prompt({
+        type: "list",
+        name: "position",
+        message: "Where do you want to cut the video?",
+        choices: positionChoices
+    });
+
+    let command = "";
+    if (position === "start" && cutOrKeep === "cut") {
+        command = `-ss ${length}`;
+    } else if (position === "start" && cutOrKeep === "keep") {
+        command = `-ss 0 -t ${length}`;
+    } else if (position === "end" && cutOrKeep === "keep") {
+        command = `-sseof -${length}`;
+    }
+    command = `ffmpeg ${command} -i {filename} "{filenameWE}_cut.mp4"`;
+
+    let { showOutput } = await inquirer.prompt({
+        type: "confirm",
+        name: "showOutput",
+        message: "Lastly, would you like to see the output of the ffmpeg commands in the terminal?",
+        default: false
+    });
+
+    let { edit } = await inquirer.prompt({
+        type: "confirm",
+        name: "edit",
+        default: false,
+        message: "Do you want to edit this command?"
+    });
+    if (edit) {
+        let { edited } = await inquirer.prompt({
+            type: "input",
+            name: "edited",
+            message: "Enter custom command (you can copy paste from above):"
+        });
+        command = edited;
+    }
+
+    if (!showOutput) {
+        command += " -loglevel quiet";
+    }
+    return {
+        command,
+        info: `${cutOrKeep} ${length} seconds from ${position} of the video`
+    };
 }
 
 async function setupShrink({ inquirer }) {

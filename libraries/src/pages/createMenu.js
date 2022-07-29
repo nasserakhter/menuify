@@ -34,6 +34,7 @@ export async function createMenu({ inquirer, v4 }) {
             message: "Do you want to add an icon image to this menu?:"
         }
     ]);
+    process.stdin.setRawMode(true);
     project.ext = project.ext.replace(/\./g, "");
     if (project.icon) {
         let icon = await show(filepickerWizard, { title: "Select an icon", filters: ["png", "jpg", "jpeg", "ico", "webp"] });
@@ -41,7 +42,7 @@ export async function createMenu({ inquirer, v4 }) {
     }
     project.id = v4();
     project.buttons = [];
-
+    process.stdin.setRawMode(true);
     if (project.cascade) {
         project.buttons = await show(cascadeMenuWizard);
     } else {
