@@ -32,7 +32,6 @@ export async function buttonWizard({ inquirer, props, buffer, box }) {
         choices: [
             { name: "Launch a program or shortcut", value: "program" },
             { name: "Execute a command", value: "command" },
-            { name: "Open a file", value: "file" },
             new inquirer.Separator(),
             { name: "Run ffmpeg", value: "ffmpeg" },
         ]
@@ -54,6 +53,24 @@ export async function buttonWizard({ inquirer, props, buffer, box }) {
                 program,
                 info: program
             };
+            break;
+        case "command":
+            button.type = "command";
+            console.log("Available variables:\n {filename} (The file's name)\n {filenameWE} (The file's name without extension)");
+            let { command } = await inquirer.prompt({
+                type: "input",
+                name: "command",
+                message: "Enter the command to execute: "
+            });
+            let { info } = await inquirer.prompt({
+                type: "input",
+                name: "info",
+                message: "Give a short description or name for this command (ex. re-encode crf 30): "
+            });
+            button.action = {
+                command,
+                info
+            }
             break;
     }
 

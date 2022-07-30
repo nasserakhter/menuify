@@ -16,8 +16,6 @@ export async function ffmpegWizard({ inquirer, buffer, box, props }) {
             { name: "Convert a video to an audio format (mp4 -> mp3, wav, m4v, etc.)", value: "vid2aud" },
             { name: "Shrink and compress a video format (mp4 -> smaller mp4)", value: "shrink" },
             { name: "Cut or trim the video to a specified length (mp4 -> short mp4)", value: "cut" },
-            new inquirer.Separator(),
-            { name: "Custom", value: "custom" }
         ]
     });
 
@@ -30,10 +28,74 @@ export async function ffmpegWizard({ inquirer, buffer, box, props }) {
         case "cut":
             command = await setupCut({ inquirer });
             break;
+        case "vid2vid":
+            command = await vid2vid({ inquirer });
+            break;
     }
 
     if (props.switchToPrimary ?? true) buffer.primary();
     return command;
+}
+
+async function vid2vid({ inquirer }) {
+    let { format } = await inquirer.prompt({
+        type: "list",
+        name: "format",
+        message: "What format would you like to convert to?",
+        choices: [
+            { name: "mp4", value: "mp4" },
+            { name: "avi", value: "avi" },
+            { name: "mov", value: "mov" },
+            { name: "webm", value: "webm" },
+            { name: "mkv", value: "mkv" },
+            { name: "gif", value: "gif" },
+            { name: "flv", value: "flv" },
+            new inquirer.Separator(),
+            { name: "custom", value: "custom" }
+        ]
+    });
+    if (format === "custom") {
+        let {customFormat} = await inquirer.prompt({
+            type: "input",
+            name: "customFormat",
+            message: "What is the custom format you want to convert to?"
+        });
+        format = customFormat.replaceAll(/[\.\s]/g, "");
+    }
+    let command = `ffmpeg -i {filename}`;
+    if (format === "webm") {
+        command += " -c:v libvpx -c:a libvorbis";
+    }
+    command += ` "{filenameWE}.${format}"`;
+
+    let { showOutput } = await inquirer.prompt({
+        type: "confirm",
+        name: "showOutput",
+        message: "Would you like to see the output of this command?",
+        default: false,
+    });
+    console.log(command);
+    let { edit } = await inquirer.prompt({
+        type: "confirm",
+        name: "edit",
+        message: "Would you like to edit this command?",
+    });
+    if (edit) {
+        let { newCommand } = await inquirer.prompt({
+            type: "input",
+            name: "newCommand",
+            message: "Please enter the new command:",
+            default: command,
+        });
+        command = newCommand;
+    }
+    if (!showOutput) {
+        command += " -loglevel quiet";
+    }
+    return {
+        command,
+        info: "convert to " + format
+    }
 }
 
 async function setupCut({ inquirer }) {

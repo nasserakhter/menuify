@@ -41,7 +41,11 @@ export async function bindButton(project, button, location) {
     let result = await regedit.putValue(query);
     */
     let fileAssoc = constants.regkey;
-    let fileAssocExt = `${fileAssoc}/.${project.ext}`;
+    let ext = project.ext;
+    if (project.ext !== "*") {
+        ext = "." + project.ext;
+    }
+    let fileAssocExt = `${fileAssoc}/${ext}`;
     let rawRoot = `${fileAssocExt}/shell`;
 
     let extRoot;
@@ -54,7 +58,7 @@ export async function bindButton(project, button, location) {
             // root does not even exist
             eroot = registry(fileAssocExt);
         } catch (e) {
-            registry(fileAssoc).add("." + project.ext);
+            registry(fileAssoc).add(ext);
             eroot = registry(fileAssocExt);
         }
         eroot.add('shell');
@@ -77,7 +81,11 @@ export async function bindButton(project, button, location) {
 }
 
 export async function bindButtons(project, buttons) {
-    let rawRoot = `${constants.regkey}/.${project.ext}/shell`;
+    let ext = project.ext;
+    if (project.ext !== "*") {
+        ext = "." + project.ext;
+    }
+    let rawRoot = `${constants.regkey}/${ext}/shell`;
     let extRoot;
     try {
         extRoot = registry(rawRoot);
@@ -88,7 +96,7 @@ export async function bindButtons(project, buttons) {
             // root does not even exist
             eroot = registry(fileAssocExt);
         } catch (e) {
-            registry(fileAssoc).add("." + project.ext);
+            registry(fileAssoc).add(ext);
             eroot = registry(fileAssocExt);
         }
         eroot.add('shell');
@@ -118,7 +126,11 @@ export async function bindButtons(project, buttons) {
 
 export async function unbindProject(project) {
     try {
-        let root = registry(`${constants.regkey}/.${project.ext}/shell/${project.id}`);
+        let ext = project.ext;
+        if (project.ext !== "*") {
+            ext = "." + project.ext;
+        }
+        let root = registry(`${constants.regkey}/${ext}/shell/${project.id}`);
         root.remove();
     } catch (err) { }
 }
