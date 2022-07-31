@@ -1,0 +1,60 @@
+  __  __                  _  __
+ |  \/  |                (_)/ _|
+ | \  / | ___ _ __  _   _ _| |_ _   _
+ | |\/| |/ _ \ '_ \| | | | |  _| | | |
+ | |  | |  __/ | | | |_| | | | | |_| |
+ |_|  |_|\___|_| |_|\__,_|_|_|  \__, |
+                                 __/ |
+                                |___/
+                                
+    Context menu modification wizard for Windows 10 and 11.
+    
+    Copyright 2022 Microart inc. Menuify is free to download, use, and modify.
+    However, any commercial use for any part of the Menuify source is prohibited.
+    Claiming Menuify or redistributing is in all cases not allowed. Any copy of 
+    Menuify distributed by any entity besides Menuify is subject to Copyright law.
+    
+WHAT is Menuify?
+
+Microart Menuify is an automatic and complete Windows context menu generation 
+and modification system. Menuify allows you to create custom context menus 
+with ease and allows for menus to be uploaded and downloaded from the Menuify 
+store.
+
+
+HOW do i install Menuify?
+
+Simply goto releases and select the latest .exe installer file. Then double-
+click the installer in any folder. Note: The folder you extract it in will be
+the folder Menuify will stay in, make sure to not delete that folder.
+
+
+HOW do i use Menuify
+
+Simply launch the menuify.cmd script then follow the onscreen instructions.
+
+
+WHY does Menuify require ffmpeg?
+
+Menuify does not require ffmpeg, however, because Menuify contains an ffmpeg 
+wizard that can create ffmpeg commands, an ffmpeg copy will be required to 
+execute the commands.
+
+
+HOW do i install ffmpeg?
+
+Menuify has a setting in the "more settings" option to download ffmpeg.
+
+
+WHAT features does Menuify provide?
+
+o   Creating single-button context menu items
+o   Creating multi-button (cascading) context menu items
+o   Setting button icons to be shown in the context menu
+o   Deleting context menu items (only context menus created with Menuify)
+o   Editing context menu items (only context menus created with Menuify)
+o   Using the ffmpeg wizard to easily create command to do simple tasks
+o   Menuify store to upload or download menu presets
+o   Importing and exporting .menu files
+o   Clean, command line based interface to use Menuify
+o   Built-in command line based file and folder picker
