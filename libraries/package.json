@@ -1,6 +1,6 @@
 {
   "name": "menuify",
-  "version": "1.0.0",
+  "version": "0.2-alpha",
   "description": "Create windows shell context menus with ease",
   "main": "main.js",
   "repository": "https://www.github.com/microart-inc/menuify",

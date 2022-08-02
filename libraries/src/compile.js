@@ -41,12 +41,34 @@ function processButtonTriggers(project, button, projectfs) {
     if (button.type === "command") {
         // Since this is an executable command, we need to make sure to compile it to a cmd file.
         logVerbose(`Compiling button action for ${button.id}`);
-        absLocation = projectfs.writeFile(button.id + ".cmd", compileCommand(button.action));
+        let langFeatures = getScriptSpecifics();
+        absLocation = projectfs.writeFile(button.id + "." + langFeatures.ext, compileCommand(button.action));
+        absLocation = `"${absLocation}"`;
+        absLocation = langFeatures.prefix + absLocation;
     } else if (button.type === "program") {
         logVerbose(`Compiling program action trigger for ${button.id}`);
         absLocation = button.action.program;
+        absLocation = `"${absLocation}"`;
     }
     return absLocation;
+}
+
+function getScriptSpecifics(customLang) {
+    let lang = customLang ?? process.env.SCRIPT_LANG ?? "powershell"
+
+    switch (lang) {
+        case "powershell":
+            return { ext: "ps1", prefix: "powershell -file " };
+            break;
+        case "batch":
+            return { ext: "cmd", prefix: "" };
+            break;
+        case "javascript":
+            break;
+        default:
+            throw new MenuifyError(`Unknown script language ${lang}`, 1303);
+            break;
+    }
 }
 
 export default function compileCommand(action) {

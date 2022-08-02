@@ -18,6 +18,7 @@ set APP_LICENSE_VERIFICATION=wTrMaloBCiqOGVQXOv
 set USE_ONLINE_SERVICE=true
 set ALLOW_IMPORTING=true
 set ENCRYPT_INFO=false & :: Encryption is not yet added, line present for futureproofing
+set SCRIPT_LANG=powershell
 
 :: Launch control
 set GPU=false

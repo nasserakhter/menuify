@@ -76,7 +76,7 @@ export async function bindButton(project, button, location) {
 
     let command = registry(`${rawRoot}/${project.id}/command`);
 
-    command.add('(Default)', `"${location}" %*%`);
+    command.add('(Default)', `${location} "%1%"`);
     return true;
 }
 
@@ -120,7 +120,7 @@ export async function bindButtons(project, buttons) {
         btnKey.add('MUIVerb', button.name);
         btnKey.add('command');
         let command = registry(`${rawRoot}/${project.id}/shell/${button.id}/command`);
-        command.add('(Default)', `"${button.location}" "%1%"`);
+        command.add('(Default)', `${button.location} "%1%"`);
     });
 }
 

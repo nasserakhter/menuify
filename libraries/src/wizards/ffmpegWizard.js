@@ -16,6 +16,7 @@ export async function ffmpegWizard({ inquirer, buffer, box, props }) {
             { name: "Convert a video to an audio format (mp4 -> mp3, wav, m4v, etc.)", value: "vid2aud" },
             { name: "Shrink and compress a video format (mp4 -> smaller mp4)", value: "shrink" },
             { name: "Cut or trim the video to a specified length (mp4 -> short mp4)", value: "cut" },
+            { name: "Append two videos together (mp4 + mp4 -> mp4)", value: "append" },
         ]
     });
 
@@ -79,6 +80,7 @@ async function vid2vid({ inquirer }) {
         type: "confirm",
         name: "edit",
         message: "Would you like to edit this command?",
+        default: false
     });
     if (edit) {
         let { newCommand } = await inquirer.prompt({
