@@ -67,7 +67,7 @@ export default class FfmpegInterface {
 
     static getFfmpegVersion() {
         // exec
-        let output = execSync(`${path.join(filesystem.rootDir, "ffmpeg", "ffmpeg.exe")} -version`).toString();
+        let output = execSync(`"${path.join(filesystem.rootDir, "ffmpeg", "ffmpeg.exe")}" -version`).toString();
         let version = output.split("\n")[0].split(" ")[2];
         return version;
     }

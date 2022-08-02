@@ -6,6 +6,8 @@ Table
 
 13 General errors
 1302 Project file corrupt or incomplete
+1303 Command language not supported
+1304 Command language not available on current system
 21 Registry errors
 36 Filesystem errors
 3602: Directory could not be created, either due to access issues or invalid naming, etc.

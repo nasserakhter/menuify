@@ -63,7 +63,7 @@ async function vid2vid({ inquirer }) {
         });
         format = customFormat.replaceAll(/[\.\s]/g, "");
     }
-    let command = `ffmpeg -i {filename}`;
+    let command = `ffmpeg -i "{filename}"`;
     if (format === "webm") {
         command += " -c:v libvpx -c:a libvorbis";
     }
@@ -158,7 +158,7 @@ async function setupCut({ inquirer }) {
     } else if (position === "end" && cutOrKeep === "keep") {
         command = `-sseof -${length}`;
     }
-    command = `ffmpeg ${command} -i {filename} "{filenameWE}_cut.mp4"`;
+    command = `ffmpeg ${command} -i "{filename}" "{filenameWE}_cut.mp4"`;
 
     let { showOutput } = await inquirer.prompt({
         type: "confirm",
@@ -268,7 +268,7 @@ async function setupShrink({ inquirer }) {
         default: false
     });
 
-    let command = 'ffmpeg -i {filename}';
+    let command = 'ffmpeg -i "{filename}"';
     let first = true;
     let info = "ffmpeg shrink";
     if (crf !== "none") {

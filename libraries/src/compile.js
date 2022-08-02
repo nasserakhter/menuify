@@ -5,6 +5,7 @@ import chalk from "chalk";
 import MenuifyError from "./menuifyError.js";
 import { compilePowershell } from "./compilers/powershell.js";
 import { compileBatch } from "./compilers/batch.js";
+import { compileJavascript } from './compilers/javascript.js';
 
 export async function compile(project) {
     logVerbose(`Compiling project ${project.id}`);
@@ -67,6 +68,11 @@ function getScriptSpecifics(customLang) {
             return { name: "batch", ext: "cmd", prefix: "" };
             break;
         case "javascript":
+            if (process.env.NODE_PATH) {
+                return { name: "javascript", ext: "js", prefix: `"${process.env.NODE_PATH}"` };
+            } else {
+                throw new MenuifyError(`Language '${lang}' is not currently available`, 1304);
+            }
             break;
         default:
             throw new MenuifyError(`Unknown script language ${lang}`, 1303);
@@ -108,6 +114,9 @@ export default function compileCommand(action, lang) {
             break;
         case "batch":
             return compileBatch(action);
+            break;
+        case "javascript":
+            return compileJavascript(action);
             break;
     }
 }
