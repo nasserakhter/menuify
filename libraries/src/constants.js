@@ -1,7 +1,8 @@
 import splash from './splash.json' assert { type: 'json' };
+import packageJson from '../package.json' assert { type: 'json' };
 
 export let constants = {
-    version: 1.0,
+    version: packageJson.version,
     name: "Menuify",
     developer: "Microart inc.",
     url: "https://microart.cf/showroom/menuify",

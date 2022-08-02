@@ -13,10 +13,14 @@ export default class filesystem {
 
     project = null;
     projectDir = null;
+    realDir = null;
+    partial = false;
 
-    constructor(project) {
+    constructor(project, createAsPartial = false) {
         this.project = project;
-        this.projectDir = path.join(filesystem.rootDir, project.id);
+        this.partial = createAsPartial;
+        this.realDir = path.join(filesystem.rootDir, project.id);
+        this.projectDir = path.join(filesystem.rootDir, project.id + (createAsPartial ? "-partial" : ""));
     }
 
     ensureProjectWritable() {
@@ -37,7 +41,18 @@ export default class filesystem {
         logVerbose(`Writing file '${name}'...`);
         let p = path.join(this.projectDir, name);
         fs.writeFileSync(p, content);
+        if (this.partial) {
+            p = path.join(this.realDir, name);
+        }
         return p;
+    }
+
+    finalize() {
+        if (this.partial) {
+            fs.renameSync(this.projectDir, this.realDir);
+            this.projectDir = this.realDir;
+            this.partial = false;
+        }
     }
 
     saveManifest() {
@@ -62,6 +77,20 @@ export default class filesystem {
         } else {
             logVerbose("A root directory already exists, no need to create new one.");
         }
+        this.cleanPartialProjects();
+    }
+
+    static cleanPartialProjects() {
+        let items = fs.readdirSync(filesystem.rootDir);
+        items.forEach(item => {
+            if (item.length === 44 && item.endsWith("-partial")) {
+                let projectDir = path.join(filesystem.rootDir, item);
+                if (fs.lstatSync(projectDir).isDirectory()) {
+                    fs.rmdirSync(projectDir, { recursive: true });
+                    logVerbose(`Deleting unfinished project '${item}'...`);
+                }
+            }
+        });
     }
 
     static writeRootFile(name, content) {

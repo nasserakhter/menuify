@@ -8,6 +8,7 @@ if not "%1"=="am_admin" (
 
 :: Node Config
 set NODE_ENV=production
+set NODE_PATH=%cd%\runtime\node.exe
 
 :: App basic config
 set APP_KEY=JOlxGXenjTcrKajKHTvJxzmYkmLWScAcG
@@ -40,7 +41,7 @@ mode con: cols=150 lines=45
 :: Launch with arguments
 
 :run
-node --no-warnings main.js
+"%NODE_PATH%" --no-warnings main.js
 echo Press any key to relaunch: 
 pause >nul
 cls

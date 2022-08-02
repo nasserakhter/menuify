@@ -7,8 +7,8 @@ console.clear();
 process.stdout.write("\x1B]0;Menuify\x07");
 console.log(chalk.cyan(constants.splash));
 console.log("");
-console.log(chalk.cyan(`${constants.name} v${constants.version.toFixed(1)} by ${constants.developer}`));
-console.log(chalk.cyan(`For more information, guides, or anything else visit: \n${chalk.yellow.underline(constants.url)}`));
+console.log(chalk.cyan(`${constants.name} v${constants.version} by ${constants.developer}`));
+console.log(chalk.cyan(`For more information, guides, or anything else visit: \n${chalk.yellow.underline(constants.url)} `));
 console.log(chalk.cyan(`(C)${(new Date()).getFullYear()} Microart inc. All Rights Reserved\n`));
 
 try {
