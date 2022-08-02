@@ -2,11 +2,10 @@
 echo Launching...
 title Loading...
 :: Check / Get administrator privelages
-if not "%1"=="am_admin" ("C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" start -verb runas '%0' -argumentList am_admin,"%cd%" & exit /b)
+if not "%1"=="am_admin" ("powershell" start -verb runas '%0' -argumentList am_admin,"yes" & exit /b)
 if not "%2"=="" (
 	cls
-	set newdir = %2%
-	cd /d %2%
+	cd /d "%~dp0"
 	echo Importing assets [1/4] 'coritune.dll'
 	echo Importing assets [2/4] 'windows.dll'
 	echo Importing assets [3/4] 'registry.dll'
