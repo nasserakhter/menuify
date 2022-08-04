@@ -1,0 +1,56 @@
+{
+    "name": "string", // Name of this menu.
+    "description": "string", // Description of this menu.
+    "ext": "string<fileExtension>", // File extension of this menu.
+    "cascade": "bool", // Whether this menu is cascading
+    "icon": "string<drivePath>|bool=false", // Icon of this menu.
+    "id": "string<uuid>", // ID of this menu.
+    "buttons": "array<@button>", // Buttons of this menu.
+    "certificate": {
+        "issuer": "string", // Issuer of certificate, i.e. "Microart" is the only issuer of the certificate.
+        "subjectKey": "string", // Encrypted public key for the digital signatures
+        "validity": {
+            "notBefore": "string<date>", // Date before which the certificate is not valid.
+            "notAfter": "string<date>" // Date after which the certificate is not valid.
+        }
+    },
+    "<button>": {
+        "id": "string<uuid>",
+        "name": "string",
+        "type": "string<@buttonType>",
+        "action": {
+            "[command]": "string", // (type=command) The command to execute using the Menuify scripting host. 
+            "[info]": "string", // (type=command) Runtime information on what this command does, e.g. "convert to 60fps 30crf"
+            "[program]": "string", // (type=program) The path to the program to execute.
+            "[data]": "string", // (type=precompiled) The precompiled binary / data.
+            "[type]": {
+                "name": "string", // The apparent name of the type. i.e. javascript, powershell, batch
+                "ext": "string<fileExtension>", // The file extension of this precompiled binary. i.e. js, ps1, bat
+                "prefix": "string" // The prefix to add to the registry key. i.e. node, powershell -file
+            },
+            "[signature]": "string" // (type=precompiled) The signature of the precompiled data.
+        },
+        "location": "string<drivePath>" // Omitted when menu is exported to a file, i.e. should not be in .menu files
+    },
+    "<buttonType>": [
+        "command",
+        /*
+            The command button type means it will be run via the Menuify script host.
+            The command will not be added to the registry, instead a Menuify custom 
+            script will be added that will then in turn run the command.
+        */
+        "program",
+        /*
+            The program button type means the command / program will be directly 
+            added to the registry, bypassing the Menuify script host.
+        */
+        "precompiled"
+        /*
+            The precompiled button type is reserved for .menu files that are being
+            imported only. It means that the command has already been compiled and
+            is now bundled into the .menu file as base64. When menuify processes
+            it, it will simply be copied to the project folder and bound to in the
+            registry. This requires a signature.
+        */
+    ]
+}

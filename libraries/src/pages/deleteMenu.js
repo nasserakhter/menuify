@@ -10,7 +10,7 @@ export async function deleteMenu({ inquirer }) {
         message: "Select a project to export:",
         choices: projects.map(p => {
             return {
-                name: `${p.name} [${p.ext}] - ${p.description}`,
+                name: `${p.name} [${p.ext === "[dir]" ? chalk.magenta("directory") : p.ext}] - ${p.description}`,
                 value: p
             }
         })

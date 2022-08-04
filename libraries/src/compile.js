@@ -6,6 +6,7 @@ import MenuifyError from "./menuifyError.js";
 import { compilePowershell } from "./compilers/powershell.js";
 import { compileBatch } from "./compilers/batch.js";
 import { compileJavascript } from './compilers/javascript.js';
+import { verifySignature } from "./interface/precompiledMenuInterface.js";
 
 export async function compile(project) {
     logVerbose(`Compiling project ${project.id}`);
@@ -41,18 +42,57 @@ export async function compile(project) {
 
 function processButtonTriggers(project, button, projectfs) {
     logVerbose(`Proccessing triggers for button ${button.id}`);
-    let absLocation = "";
+    let absLocation = "exit";
     if (button.type === "command") {
         // Since this is an executable command, we need to make sure to compile it to a cmd file.
         logVerbose(`Compiling button action for ${button.id}`);
-        let langFeatures = getScriptSpecifics();
-        absLocation = projectfs.writeFile(button.id + "." + langFeatures.ext, compileCommand(button.action, langFeatures.name));
-        absLocation = `"${absLocation}"`;
-        absLocation = langFeatures.prefix + absLocation;
+        if (button.action && button.action.command) {
+            let langFeatures = getScriptSpecifics();
+            absLocation = projectfs.writeFile(button.id + "." + langFeatures.ext, compileCommand(button.action, langFeatures.name));
+            absLocation = `"${absLocation}"`;
+            if (langFeatures.prefix[langFeatures.prefix.length - 1] !== " ") langFeatures.prefix += " ";
+            absLocation = langFeatures.prefix + absLocation;
+        }
     } else if (button.type === "program") {
         logVerbose(`Compiling program action trigger for ${button.id}`);
-        absLocation = button.action.program;
-        absLocation = `"${absLocation}"`;
+        if (button.action && button.action.program) {
+            absLocation = button.action.program;
+            absLocation = `"${absLocation}"`;
+        }
+    } else if (button.type === "precompiled") {
+        if (button.action && button.action.data) {
+            logVerbose(`Processing precompiled action triggers for ${button.id}`);
+
+            if (project.certificate && button.action.signature) {
+                logVerbose(`Verifying signature for ${button.id}`);
+                if (verifySignature(button.action.data, button.action.signature, project.certificate)) {
+                    logVerbose(`Signature for ${button.id} verified`);
+                    try {
+                        let buffer = Buffer.from(button.action.data, "base64");
+                        let ext = "precompileddata";
+                        let prefix = "";
+                        if (button.action.type && button.action.type.ext) {
+                            ext = button.action.type.ext;
+                            prefix = button.action.type.prefix;
+                        } else {
+                            let langFeatures = getScriptSpecifics(button.action.type.name);
+                            ext = langFeatures.ext;
+                            prefix = langFeatures.prefix;
+                        }
+                        absLocation = projectfs.writeFile(button.id + "." + ext, buffer);
+                        absLocation = `"${absLocation}"`;
+                        if (prefix[prefix.length - 1] !== " ") prefix += " ";
+                        absLocation = prefix + absLocation;
+                    } catch (e) {
+                        throw new MenuifyError(`Error processing precompiled data for ${button.id}: ${e}`, 1305);
+                    }
+                } else {
+                    throw new MenuifyError(`Signature for ${button.id} failed to verify`, 1305);
+                }
+            } else {
+                throw new MenuifyError(`Project ${project.id} contains unsigned precompiled binaries.`, 1305);
+            }
+        }
     }
     return absLocation;
 }
@@ -69,7 +109,7 @@ function getScriptSpecifics(customLang) {
             break;
         case "javascript":
             if (process.env.NODE_PATH) {
-                return { name: "javascript", ext: "js", prefix: `"${process.env.NODE_PATH}"` };
+                return { name: "javascript", ext: "js", prefix: `"${process.env.NODE_PATH}" ` };
             } else {
                 throw new MenuifyError(`Language '${lang}' is not currently available`, 1304);
             }

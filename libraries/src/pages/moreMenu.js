@@ -3,15 +3,27 @@ import { show } from "../context.js";
 import FfmpegInterface from "../interface/ffmpegInterface.js";
 
 export async function moreMenu({ inquirer }) {
+    let isFfmpegInstalled = FfmpegInterface.isFfmpegInstalled();
+    let choices = [];
+
+    if (isFfmpegInstalled === 0) {
+        choices.push({ name: "Download ffmpeg", value: "ffmpeg" });
+    } else if (isFfmpegInstalled === 1) {
+        choices.push({ name: "Update ffmpeg", value: "ffmpeg" });
+    } else {
+        console.log(chalk.yellow("Menuify is using a copy of Ffmpeg found already installed, it cannot be updated by menuify."));
+    }
+
+    choices = [
+        ...choices,
+        { name: "Developer options", value: "developer" },
+        { name: "Read the terms and conditions", value: "terms" },
+    ]
     let { option } = await inquirer.prompt({
         type: "list",
         name: "option",
         message: "Select a menu option:",
-        choices: [
-            { name: "Download or update ffmpeg", value: "ffmpeg" },
-            { name: "Developer options", value: "developer" },
-            { name: "Read the terms and conditions", value: "terms" },
-        ]
+        choices
     });
 
     switch (option) {
@@ -23,6 +35,7 @@ export async function moreMenu({ inquirer }) {
 
 async function ffmpegMenu({ inquirer }) {
     let isFfmpegInstalled = FfmpegInterface.isFfmpegInstalled();
+
     if (isFfmpegInstalled) {
         console.log(chalk.green("FFmpeg is installed."));
         let { install } = await inquirer.prompt({

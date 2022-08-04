@@ -4,11 +4,15 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Run Menuify",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "runtimeExecutable": "${workspaceRoot}\\menuify.cmd"
+            "runtimeExecutable": "${workspaceRoot}\\menuify.cmd",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "MENUIFY_MODE": "debug"
+            }
         }
     ]
 }

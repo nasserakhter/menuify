@@ -42,7 +42,9 @@ export async function bindButton(project, button, location) {
     */
     let fileAssoc = constants.regkey;
     let ext = project.ext;
-    if (project.ext !== "*") {
+    if (project.ext === "[dir]") {
+        return bindDirectory(project, button, location);
+    } else if (project.ext !== "*") {
         ext = "." + project.ext;
     }
     let fileAssocExt = `${fileAssoc}/${ext}`;
@@ -80,9 +82,136 @@ export async function bindButton(project, button, location) {
     return true;
 }
 
+async function bindDirectory(project, button, location) {
+    let topKey = registry(constants.directoryRegkey); // "HKCR/Directory";
+    let indirectTopKey = null; // "HKCR/Directory/Background";
+
+    let directRoot = null; // "HKCR/Directory/shell";
+    let indirectRoot = null; // "HKCR/Directory/Background/shell";
+
+    // Recursive create background an shell directory if non-existent, otherwise simply return
+    try {
+        indirectRoot = registry(`${constants.directoryRegkey}/Background/shell`);
+    } catch (e) {
+        // Bcakground does not have shell key
+        try {
+            indirectTopKey = registry(`${constants.directoryRegkey}/Background`);
+        } catch (e) {
+            // Background does not even exist
+            topKey.add('Background');
+            indirectTopKey = registry(`${constants.directoryRegkey}/Background`);
+        }
+        indirectTopKey.add('shell');
+        indirectRoot = registry(`${constants.directoryRegkey}/Background/shell`);
+    }
+
+    // Recursive create shell directory if non-existent, otherwise simply return
+    try {
+        directRoot = registry(`${constants.directoryRegkey}/shell`);
+    } catch (e) {
+        topKey.add('shell');
+        directRoot = registry(`${constants.directoryRegkey}/shell`);
+    }
+    directRoot.add(project.id);
+    indirectRoot.add(project.id);
+
+    let directKey = registry(`${constants.directoryRegkey}/shell/${project.id}`);
+    let indirectKey = registry(`${constants.directoryRegkey}/Background/shell/${project.id}`);
+
+    directKey.add('MUIVerb', project.name);
+    indirectKey.add('MUIVerb', project.name);
+    if (project.icon) {
+        directKey.add('Icon', project.icon);
+        indirectKey.add('Icon', project.icon);
+    }
+    directKey.add('command');
+    indirectKey.add('command');
+
+    let directCommand = registry(`${constants.directoryRegkey}/shell/${project.id}/command`);
+    let indirectCommand = registry(`${constants.directoryRegkey}/Background/shell/${project.id}/command`);
+
+    directCommand.add('(Default)', `${location} "%1%"`);
+    indirectCommand.add('(Default)', `${location} "%1%"`);
+    return true;
+}
+
+async function bindDirectoryButtons(project, buttons) {
+    let topKey = registry(constants.directoryRegkey); // "HKCR/Directory";
+    let indirectTopKey = null; // "HKCR/Directory/Background";
+
+    let directRoot = null; // "HKCR/Directory/shell";
+    let indirectRoot = null; // "HKCR/Directory/Background/shell";
+
+    // Recursive create background an shell directory if non-existent, otherwise simply return
+    try {
+        indirectRoot = registry(`${constants.directoryRegkey}/Background/shell`);
+    } catch (e) {
+        // Bcakground does not have shell key
+        try {
+            indirectTopKey = registry(`${constants.directoryRegkey}/Background`);
+        } catch (e) {
+            // Background does not even exist
+            topKey.add('Background');
+            indirectTopKey = registry(`${constants.directoryRegkey}/Background`);
+        }
+        indirectTopKey.add('shell');
+        indirectRoot = registry(`${constants.directoryRegkey}/Background/shell`);
+    }
+
+    // Recursive create shell directory if non-existent, otherwise simply return
+    try {
+        directRoot = registry(`${constants.directoryRegkey}/shell`);
+    } catch (e) {
+        topKey.add('shell');
+        directRoot = registry(`${constants.directoryRegkey}/shell`);
+    }
+    directRoot.add(project.id);
+    indirectRoot.add(project.id);
+
+    let directKey = registry(`${constants.directoryRegkey}/shell/${project.id}`);
+    let indirectKey = registry(`${constants.directoryRegkey}/Background/shell/${project.id}`);
+
+    directKey.add('MUIVerb', project.name);
+    indirectKey.add('MUIVerb', project.name);
+    if (project.icon) {
+        directKey.add('Icon', project.icon);
+        indirectKey.add('Icon', project.icon);
+    }
+    directKey.add('subcommands', ' ');
+    indirectKey.add('subcommands', ' ');
+
+    directKey.add('shell');
+    indirectKey.add('shell');
+
+    let directSubcommands = registry(`${constants.directoryRegkey}/shell/${project.id}/shell`);
+    let indirectSubcommands = registry(`${constants.directoryRegkey}/Background/shell/${project.id}/shell`);
+
+    buttons.forEach(button => {
+        directSubcommands.add(button.id);
+        indirectSubcommands.add(button.id);
+
+        let directButton = registry(`${constants.directoryRegkey}/shell/${project.id}/shell/${button.id}`);
+        let indirectButton = registry(`${constants.directoryRegkey}/Background/shell/${project.id}/shell/${button.id}`);
+
+        directButton.add('MUIVerb', button.name);
+        indirectButton.add('MUIVerb', button.name);
+        directButton.add('command');
+        indirectButton.add('command');
+
+        let directButtonCommand = registry(`${constants.directoryRegkey}/shell/${project.id}/shell/${button.id}/command`);
+        let indirectButtonCommand = registry(`${constants.directoryRegkey}/Background/shell/${project.id}/shell/${button.id}/command`);
+
+        directButtonCommand.add('(Default)', `${button.location} "%1%"`);
+        indirectButtonCommand.add('(Default)', `${button.location} "%1%"`);
+    });
+    return;
+}
+
 export async function bindButtons(project, buttons) {
     let ext = project.ext;
-    if (project.ext !== "*") {
+    if (project.ext === "[dir]") {
+        return bindDirectoryButtons(project, buttons);
+    } else if (project.ext !== "*") {
         ext = "." + project.ext;
     }
     let rawRoot = `${constants.regkey}/${ext}/shell`;
@@ -125,12 +254,19 @@ export async function bindButtons(project, buttons) {
 }
 
 export async function unbindProject(project) {
-    try {
-        let ext = project.ext;
-        if (project.ext !== "*") {
-            ext = "." + project.ext;
-        }
-        let root = registry(`${constants.regkey}/${ext}/shell/${project.id}`);
-        root.remove();
-    } catch (err) { }
+    if (project.ext === "[dir]") {
+        let directRoot = registry(`${constants.directoryRegkey}/shell/${project.id}`);
+        let indirectRoot = registry(`${constants.directoryRegkey}/Background/shell/${project.id}`);
+        directRoot.remove();
+        indirectRoot.remove();
+    } else {
+        try {
+            let ext = project.ext;
+            if (project.ext !== "*") {
+                ext = "." + project.ext;
+            }
+            let root = registry(`${constants.regkey}/${ext}/shell/${project.id}`);
+            root.remove();
+        } catch (err) { }
+    }
 }
