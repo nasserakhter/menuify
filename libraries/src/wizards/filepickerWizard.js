@@ -276,7 +276,7 @@ function generateFileInfo(file, seperate) {
         }
     }
     buffer += file.isDirectory ? chalk.magenta(" dir ") : chalk.yellow("file ");
-    let name = file.isDirectory ? chalk.cyan(rawName.padEnd(seperate)) : chalk.green(rawName.padEnd(seperate));
+    let name = rawName.toLowerCase().includes("menuify") ? chalk.yellow(rawName.padEnd(seperate)) : (file.isDirectory ? chalk.cyan(rawName.padEnd(seperate)) : chalk.green(rawName.padEnd(seperate)));
     buffer += name;
     let modified = moment(file.modified).format("MMM Do, YYYY h:mm A");
     buffer += modified.padEnd(seperate);

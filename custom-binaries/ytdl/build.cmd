@@ -9,4 +9,9 @@ cd libraries
 cd publishing
 call node sign.cjs "%ogpath%\release\ytdl.unsigned"
 cd %ogpath%\release
-move ytdl.signed.menu ytdl.menu
+set relpath=%cd%
+cd ..
+cd ..
+cd ..
+cd custom-binaries-release
+move "%relpath%\ytdl.signed.menu" ytdl.menu

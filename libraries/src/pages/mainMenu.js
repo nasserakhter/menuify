@@ -1,4 +1,7 @@
+import { logVerbose } from "../logger.js";
+
 export async function mainMenu({ inquirer }) {
+    logVerbose("[Navigator] Showing 'mainMenu'");
     let { menu } = await inquirer.prompt({
         type: "list",
         name: "menu",

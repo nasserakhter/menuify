@@ -19,12 +19,14 @@ export default class FfmpegInterface {
     static isInstalled = 0;
 
     static async initialize() {
+        logVerbose("Initializing ffmpeg interface...");
         if (!filesystem.rootFileExists("ffmpeg.json")) {
             // If not installed, check if system has ffmpeg
             //return;
             try {
                 let ffmpeg = await which("ffmpeg");
 
+                logVerbose("Found ffmpeg at " + ffmpeg);
                 let manifest = {
                     version: this.getFfmpegVersion(ffmpeg),
                     location: ffmpeg,
@@ -36,6 +38,7 @@ export default class FfmpegInterface {
             } catch (e) { }
         } else {
             // Is already installed, get info
+            logVerbose("Ffmpeg is already installed.");
             let _ffmpegManifest = filesystem.readRootFile("ffmpeg.json");
             try {
                 let ffmpegManifest = JSON.parse(_ffmpegManifest);
@@ -108,13 +111,16 @@ export default class FfmpegInterface {
     static getFfmpegVersion(location) {
         // exec
         if (location) {
+            logVerbose("Getting ffmpeg version from " + location);
             let output = execSync(`"${location}" -version`).toString();
             let version = output.split("\n")[0].split(" ")[2];
             this.ffmpegVersion = version;
             return version;
         } else if (this.ffmpegVersion) {
+            logVerbose("Getting ffmpeg version from cache");
             return this.ffmpegVersion;
         } else {
+            logVerbose("Getting ffmpeg version from system");
             if (location === undefined) location = this.getFfmpegLocation();
             if (location) {
                 let output = execSync(`"${location}" -version`).toString();

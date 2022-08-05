@@ -5,6 +5,7 @@ console.log("Bundling project...");
 
 let ytdAudio = fs.readFileSync("release/ytdl-audio.js").toString("base64");
 let ytdVideo = fs.readFileSync("release/ytdl-video.js").toString("base64");
+let ytIcon = fs.readFileSync("icon.ico").toString("base64");
 
 console.log("Generating manifest...");
 
@@ -13,7 +14,7 @@ let manifest = {
     "description": "Download mp4 and mp3 files using a youtube link",
     "ext": "[dir]", 
     "cascade": true,
-    "icon": false,
+    "rawIcon": ytIcon,
     "id": "e69d4936-9a77-450c-abad-a4e25126ea4f",
     "buttons": [
         {

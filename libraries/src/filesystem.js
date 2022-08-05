@@ -49,6 +49,7 @@ export default class filesystem {
 
     finalize() {
         if (this.partial) {
+            logVerbose(`Finalizing project ${this.project.id}...`);
             fs.renameSync(this.projectDir, this.realDir);
             this.projectDir = this.realDir;
             this.partial = false;
@@ -58,7 +59,19 @@ export default class filesystem {
     saveManifest() {
         this.ensureProjectWritable();
         logVerbose(`Saving manifest...`);
-        fs.writeFileSync(path.join(this.projectDir, "manifest.json"), JSON.stringify(this.project));
+        let sanitizedProject = this.project;
+        if (sanitizedProject.rawIcon) {
+            delete sanitizedProject.rawIcon;
+        }
+        sanitizedProject.buttons.forEach(button => {
+            if (button.location) {
+                delete button.location;
+            }
+            if (button.type === "precompiled") {
+                delete button.action.data;
+            }
+        });
+        fs.writeFileSync(path.join(this.projectDir, "manifest.json"), JSON.stringify(sanitizedProject));
     }
 
     static rootDir = "";

@@ -8,7 +8,7 @@
 - Added support for javascript scripts
 - Added support for pre-compiled binaries
 - Added certificate and code-signing support
-- Youtube-Dl support soon
+- Youtube-Dl support added
 
 ### 0.1-alpha
 

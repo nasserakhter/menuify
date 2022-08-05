@@ -14,6 +14,13 @@ export async function compile(project) {
     let projectfs = new filesystem(project, true);
 
     let error = false;
+
+    if (project.rawIcon) {
+        logVerbose(`Writing icon for project ${project.id}`);
+        let iconLocation = projectfs.writeFile("icon.ico", Buffer.from(project.rawIcon, "base64"));
+        project.icon = iconLocation;
+    }
+
     // compile and bind buttons
     if (project.cascade) {
         let buttons = [];
@@ -24,9 +31,6 @@ export async function compile(project) {
                 location: button.location,
                 name: button.name
             });
-        });
-        project.buttons.filter(x => x.type === "precompiled").forEach(button => {
-            delete button.action.data;
         });
         await bindButtons(project, buttons);
     } else if (project.buttons && project.buttons.length > 0) {
@@ -41,6 +45,7 @@ export async function compile(project) {
         logVerbose(`Error compiling project ${project.id}: ${error}`);
         throw new MenuifyError("The project does not contain any buttons to be processed, aborting.", 1302)
     } else {
+        projectfs.writeFile('raw.menu', JSON.stringify(project));
         projectfs.finalize();
         projectfs.saveManifest();
         console.log(chalk.green("Project compiled successfully"));
