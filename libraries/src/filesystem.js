@@ -148,7 +148,7 @@ export default class filesystem {
     static deleteProject(project) {
         logVerbose(`Deleting project '${project.name}'...`);
         fs.rmdirSync(path.join(filesystem.rootDir, project.id), { recursive: true });
-        unbindProject(project);
+        if (process.platform === "win32") unbindProject(project);
     }
 
     static async visualDownloadFile(url, name) {

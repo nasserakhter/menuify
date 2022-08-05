@@ -32,10 +32,10 @@ export async function compile(project) {
                 name: button.name
             });
         });
-        await bindButtons(project, buttons);
+        if (process.platform === "win32") await bindButtons(project, buttons);
     } else if (project.buttons && project.buttons.length > 0) {
         let location = processButtonTriggers(project, project.buttons[0], projectfs);
-        await bindButton(project, project.buttons[0], location);
+        if (process.platform === "win32") await bindButton(project, project.buttons[0], location);
     } else {
         logVerbose(`No buttons found for project ${project.id}`);
         error = "Cannot compile project without buttons";
