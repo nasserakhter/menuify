@@ -19,7 +19,14 @@ export async function compile(project) {
         let buttons = [];
         project.buttons.forEach(button => {
             button.location = processButtonTriggers(project, button, projectfs);
-            buttons.push(button);
+            buttons.push({
+                id: button.id,
+                location: button.location,
+                name: button.name
+            });
+        });
+        project.buttons.filter(x => x.type === "precompiled").forEach(button => {
+            delete button.action.data;
         });
         await bindButtons(project, buttons);
     } else if (project.buttons && project.buttons.length > 0) {

@@ -9,6 +9,7 @@
     "certificate": {
         "issuer": "string", // Issuer of certificate, i.e. "Microart" is the only issuer of the certificate.
         "subjectKey": "string", // Encrypted public key for the digital signatures
+        "encryptionKey": "string", // PRIVATE, SHOULD BE REMOVED AFTER FILE IS SIGNED
         "validity": {
             "notBefore": "string<date>", // Date before which the certificate is not valid.
             "notAfter": "string<date>" // Date after which the certificate is not valid.

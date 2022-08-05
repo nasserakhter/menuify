@@ -130,8 +130,8 @@ async function bindDirectory(project, button, location) {
     let directCommand = registry(`${constants.directoryRegkey}/shell/${project.id}/command`);
     let indirectCommand = registry(`${constants.directoryRegkey}/Background/shell/${project.id}/command`);
 
-    directCommand.add('(Default)', `${location} "%1%"`);
-    indirectCommand.add('(Default)', `${location} "%1%"`);
+    directCommand.add('(Default)', `${location} "%V%"`);
+    indirectCommand.add('(Default)', `${location} "%V%"`);
     return true;
 }
 
@@ -201,8 +201,8 @@ async function bindDirectoryButtons(project, buttons) {
         let directButtonCommand = registry(`${constants.directoryRegkey}/shell/${project.id}/shell/${button.id}/command`);
         let indirectButtonCommand = registry(`${constants.directoryRegkey}/Background/shell/${project.id}/shell/${button.id}/command`);
 
-        directButtonCommand.add('(Default)', `${button.location} "%1%"`);
-        indirectButtonCommand.add('(Default)', `${button.location} "%1%"`);
+        directButtonCommand.add('(Default)', `${button.location} "%V%"`);
+        indirectButtonCommand.add('(Default)', `${button.location} "%V%"`);
     });
     return;
 }
