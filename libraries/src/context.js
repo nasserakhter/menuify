@@ -66,6 +66,19 @@ export async function show(func, props) {
     return await func(ctx);
 }
 
+export function getContext() {
+    return {
+        inquirer,
+        box,
+        v4,
+        buffer,
+        readkey,
+        alert,
+        consolekeys,
+        cursor
+    };
+}
+
 async function readkey(triggerResize) {
     process.stdin.setRawMode(true);
     process.stdin.resume();

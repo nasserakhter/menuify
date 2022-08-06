@@ -30,17 +30,28 @@ export async function startApp() {
         let grid = new Grid()
         //grid.setViewport(process.stdout.columns, 10);
         grid.useConsoleViewport();
-        grid.uniformBorder(grid.borders.ROUNDED);
-        grid.marginLeft(20);
-        grid.marginBottom(15);
-        grid.marginRight(10);
-        grid.marginTop(18);
+        grid.uniformBorder(grid.borders.SOLID);
+        //grid.uniformPadding(1);
 
-        let aBuffer = grid.invokeRender();
+        let sizeMargins = () => {
+            let { width, height } = grid.getViewport(false);
+            grid.marginLeft(width < 120 ? 0 : "10%");
+            grid.marginRight(width < 120 ? 0 : "10%");
 
-        process.stdout.write(aBuffer.join("\n"));
+            grid.marginTop(height < 40 ? 0 : "10%");
+            grid.marginBottom(height < 40 ? 0 : "10%");
+        }
 
-        await readkey();
+        sizeMargins();
+
+        grid.onResize = () => {
+            grid.useConsoleViewport();
+            sizeMargins();
+        }
+
+        await grid.streamConsoleViewportAsync();
+
+        buffer.primary();
     });
     return;
     let option = await show(mainMenu);

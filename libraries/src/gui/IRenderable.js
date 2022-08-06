@@ -1,4 +1,4 @@
-import { s, useRealLength } from "./saffronUtils.js";
+import { s, useRealLength, useContext } from "./saffronUtils.js";
 
 export default class IRenderable {
 
@@ -11,10 +11,14 @@ export default class IRenderable {
     }
 
     // Default sizes
-    margins = {
-        AUTO: 'auto',
-        NONE: 0
-    };
+    margins = { NONE: 0 };
+
+    paddings = { NONE: 0 };
+
+    paddingTypes = {
+        RELATIVE_TO_ELEMENT: 0,
+        RELATIVE_TO_VIEWPORT: 1,
+    }
 
     sizes = {
         AUTO: 'auto',
@@ -49,7 +53,17 @@ export default class IRenderable {
             top: this.margins.NONE,
             right: this.margins.NONE,
             bottom: this.margins.NONE,
-            left: this.margins.NONE
+            left: this.margins.NONE,
+            ratio: [1, 1]
+        },
+
+        padding: {
+            top: this.paddings.NONE,
+            right: this.paddings.NONE,
+            bottom: this.paddings.NONE,
+            left: this.paddings.NONE,
+            ratio: [3, 1],
+            type: this.paddingTypes.RELATIVE_TO_ELEMENT
         },
 
         border: {
@@ -70,7 +84,7 @@ export default class IRenderable {
         viewportWidth: this.sizes.UNSET,
         viewportHeight: this.sizes.UNSET,
 
-        aBuffer: []
+        transform: (arg) => { return arg; }, // blank transform function
     }
 
     _native = {
@@ -203,16 +217,54 @@ export default class IRenderable {
         }
     }
 
+    normalizePercents(value, axis, includeMargins) {
+        if (typeof value === 'string') {
+            if (value.endsWith('%')) {
+                let { width, height } = this.getViewport(includeMargins);
+                switch (axis) {
+                    case 'width':
+                        return Math.floor((Math.max(Math.min(parseInt(value), 100), 0) / 100) * width);
+                    case 'height':
+                        return Math.floor((Math.max(Math.min(parseInt(value), 100), 0) / 100) * height);
+                    default:
+                        return value;
+                }
+            } else {
+                return value;
+            }
+        } else if (typeof value === 'number') {
+            return value;
+        }
+    }
+
+    applyMarginRatio(margin) {
+        margin.top *= this._nominal.margin.ratio[1];
+        margin.right *= this._nominal.margin.ratio[0];
+        margin.bottom *= this._nominal.margin.ratio[1];
+        margin.left *= this._nominal.margin.ratio[0];
+        return margin;
+    }
+
+    applyPaddingRatio(padding) {
+        padding.top *= this._nominal.padding.ratio[1];
+        padding.right *= this._nominal.padding.ratio[0];
+        padding.bottom *= this._nominal.padding.ratio[1];
+        padding.left *= this._nominal.padding.ratio[0];
+        return padding;
+    }
+
     // Margin
     getMargin() {
-        return {
-            top: this._nominal.margin.top,
-            right: this._nominal.margin.right,
-            bottom: this._nominal.margin.bottom,
-            left: this._nominal.margin.left,
-            x: this._nominal.margin.left + this._nominal.margin.right,
-            y: this._nominal.margin.top + this._nominal.margin.bottom
+        let margin = {
+            top: this.normalizePercents(this._nominal.margin.top, 'height', false),
+            right: this.normalizePercents(this._nominal.margin.right, 'width', false),
+            bottom: this.normalizePercents(this._nominal.margin.bottom, 'height', false),
+            left: this.normalizePercents(this._nominal.margin.left, 'width', false)
         }
+        margin = this.applyMarginRatio(margin);
+        margin.x = margin.left + margin.right;
+        margin.y = margin.top + margin.bottom;
+        return margin;
     }
 
     // Border
@@ -229,15 +281,36 @@ export default class IRenderable {
         }
     }
 
+    getPadding() {
+        let includeMargins = this._nominal.padding.type === this.paddingTypes.RELATIVE_TO_VIEWPORT ? false : true;
+        let padding = {
+            top: this.normalizePercents(this._nominal.padding.top, 'height', includeMargins),
+            right: this.normalizePercents(this._nominal.padding.right, 'width', includeMargins),
+            bottom: this.normalizePercents(this._nominal.padding.bottom, 'height', includeMargins),
+            left: this.normalizePercents(this._nominal.padding.left, 'width', includeMargins)
+        };
+        padding = this.applyPaddingRatio(padding);
+        padding.x = padding.left + padding.right;
+        padding.y = padding.top + padding.bottom;
+        return padding;
+    }
+
     borderLeft(type) { this._nominal.border.left = type; }
     borderRight(type) { this._nominal.border.right = type; }
     borderTop(type) { this._nominal.border.top = type; }
     borderBottom(type) { this._nominal.border.bottom = type; }
     border(top, right, bottom, left) {
-        this.borderTop(top);
-        this.borderRight(right);
-        this.borderBottom(bottom);
-        this.borderLeft(left);
+        if ((top !== undefined || top !== null) &&
+            (right !== undefined || right !== null) &&
+            (bottom !== undefined || bottom !== null) &&
+            (left !== undefined || left !== null)) {
+            this.borderTop(top);
+            this.borderRight(right);
+            this.borderBottom(bottom);
+            this.borderLeft(left);
+        } else {
+            throw new Error('Top, right, bottom and left margins must be defined');
+        }
     }
     uniformBorder(type) {
         this.borderLeft(type);
@@ -245,16 +318,33 @@ export default class IRenderable {
         this.borderTop(type);
         this.borderBottom(type);
     }
+    borderXY(x, y) {
+        if ((x !== undefined || x !== null) && (y !== undefined || y !== null)) {
+            this.borderTop(y);
+            this.borderRight(x);
+            this.borderBottom(y);
+            this.borderLeft(x);
+        } else {
+            throw new Error('X and Y dimensions must be defined');
+        }
+    }
 
     marginLeft(margin) { this._nominal.margin.left = margin; }
     marginRight(margin) { this._nominal.margin.right = margin; }
     marginTop(margin) { this._nominal.margin.top = margin; }
     marginBottom(margin) { this._nominal.margin.bottom = margin; }
     margin(top, right, bottom, left) {
-        this.marginTop(top);
-        this.marginRight(right);
-        this.marginBottom(bottom);
-        this.marginLeft(left);
+        if ((top !== undefined || top !== null) &&
+            (right !== undefined || right !== null) &&
+            (bottom !== undefined || bottom !== null) &&
+            (left !== undefined || left !== null)) {
+            this.marginTop(top);
+            this.marginRight(right);
+            this.marginBottom(bottom);
+            this.marginLeft(left);
+        } else {
+            throw new Error('Top, right, bottom and left margins must be defined');
+        }
     }
     uniformMargin(margin) {
         this.marginTop(margin);
@@ -262,11 +352,79 @@ export default class IRenderable {
         this.marginBottom(margin);
         this.marginLeft(margin);
     }
+    marginXY(x, y) {
+        if ((x !== undefined || x !== null) && (y !== undefined || y !== null)) {
+            this.marginTop(y);
+            this.marginRight(x);
+            this.marginBottom(y);
+            this.marginLeft(x);
+        } else {
+            throw new Error('X and Y dimensions must be defined');
+        }
+    }
+
+    setMarginRatio(ratioX, ratioY) {
+        this._nominal.margin.ratio = [ratioX, ratioY];
+    }
+    getMarginRatio(ratioX, ratioY) {
+        return {
+            x: this._nominal.margin.ratio[0],
+            y: this._nominal.margin.ratio[1]
+        }
+    }
+
+    paddingLeft(padding) { this._nominal.padding.left = padding; }
+    paddingRight(padding) { this._nominal.padding.right = padding; }
+    paddingTop(padding) { this._nominal.padding.top = padding; }
+    paddingBottom(padding) { this._nominal.padding.bottom = padding; }
+    padding(top, right, bottom, left) {
+        if ((top !== undefined || top !== null) &&
+            (right !== undefined || right !== null) &&
+            (bottom !== undefined || bottom !== null) &&
+            (left !== undefined || left !== null)) {
+            this.paddingTop(top);
+            this.paddingRight(right);
+            this.paddingBottom(bottom);
+            this.paddingLeft(left);
+        } else {
+            throw new Error('Top, right, bottom and left dimensions must be defined');
+        }
+    }
+    uniformPadding(padding) {
+        this.paddingTop(padding);
+        this.paddingRight(padding);
+        this.paddingBottom(padding);
+        this.paddingLeft(padding);
+    }
+    paddingXY(x, y) {
+        if ((x !== undefined || x !== null) && (y !== undefined || y !== null)) {
+            this.paddingTop(y);
+            this.paddingRight(x);
+            this.paddingBottom(y);
+            this.paddingLeft(x);
+        } else {
+            throw new Error('X and Y dimensions must be defined');
+        }
+    }
+
+    setPaddingRatio(ratioX, ratioY) {
+        this._nominal.padding.ratio = [ratioX, ratioY];
+    }
+    getPaddingRatio(ratioX, ratioY) {
+        return {
+            x: this._nominal.padding.ratio[0],
+            y: this._nominal.padding.ratio[1]
+        }
+    }
 
     // Automatically fills the viewport requirements from the process.stdout size
     useConsoleViewport() {
         this._nominal.viewportWidth = process.stdout.columns;
         this._nominal.viewportHeight = process.stdout.rows;
+    }
+
+    useTransform(transform) {
+        this._nominal.transform = transform;
     }
 
     // Manually set the size of the renderable
@@ -281,12 +439,14 @@ export default class IRenderable {
     }
 
     // Returns the size of the renderable in pixels
-    getViewport() {
+    getViewport(withMargins = true) {
         let width = this._nominal.viewportWidth === this.sizes.UNSET ? process.stdout.columns : this._nominal.viewportWidth;
         let height = this._nominal.viewportHeight === this.sizes.UNSET ? process.stdout.rows : this._nominal.viewportHeight;
-        let { x, y } = this.getMargin();
-        width = Math.max(width - x, 0);
-        height = Math.max(height - y, 0);
+        if (withMargins) {
+            let { x, y } = this.getMargin();
+            width = Math.max(width - x, 0);
+            height = Math.max(height - y, 0);
+        }
         return {
             width,
             height
@@ -327,14 +487,53 @@ export default class IRenderable {
         return size;
     }
 
+    // Applies the padding dimensions to the size
+    applyPaddingSize(size) {
+        let { x, y } = this.getPadding();
+        size.width -= x;
+        size.height -= y;
+        return size;
+    }
+
     postprocess() {
+        this.applyTransform();
+        this.applyPadding();
         this.applyBorder();
         this.applyMargin();
     }
 
+    applyTransform() {
+        if (typeof this._nominal.transform === 'function') {
+            this.aBuffer = this.aBuffer.map((line) => { return this._nominal.transform(line) });
+        }
+    }
+
+    applyPadding() {
+        let { top, right, bottom, left } = this.getPadding();
+        let { width } = this.getSize();
+
+        if (left !== this.paddings.NONE) {
+            this.aBuffer = this.aBuffer.map(x => " ".repeat(left) + x);
+        }
+        if (right !== this.paddings.NONE) {
+            this.aBuffer = this.aBuffer.map(x => x + " ".repeat(right));
+        }
+        if (top !== this.paddings.NONE) {
+            for (let i = 0; i < top; i++) {
+                this.aBuffer.unshift(" ".repeat(width + left + right));
+            }
+        }
+        if (bottom !== this.paddings.NONE) {
+            for (let i = 0; i < bottom; i++) {
+                this.aBuffer.push(" ".repeat(width + left + right));
+            }
+        }
+
+    }
+
     applyBorder() {
         let { top, right, bottom, left } = this.getBorder();
-        let { width, height } = this.getSize();
+        let { width } = this.unapplyPaddingSize(this.getSize());
         let borderTopLeft = this._native.getBorderCharacter(top, this.border_orientations.TOP_LEFT);
         let borderTop = this._native.getBorderCharacter(top, this.border_orientations.TOP);
         let borderTopRight = this._native.getBorderCharacter(top, this.border_orientations.TOP_RIGHT);
@@ -360,7 +559,7 @@ export default class IRenderable {
 
     applyMargin() {
         let { top, right, bottom, left } = this.getMargin();
-        let { width, height } = this.unapplyBorderSize(this.getSize());
+        let { width, height } = this.unapplyBorderSize(this.unapplyPaddingSize(this.getSize()));
 
         if (left !== this.margins.NONE) {
             this.aBuffer = this.aBuffer.map(x => " ".repeat(left) + x);
@@ -398,6 +597,14 @@ export default class IRenderable {
         return size;
     }
 
+    // Unapplies the padding dimensions to the size
+    unapplyPaddingSize(size) {
+        let { x, y } = this.getPadding();
+        size.width += x;
+        size.height += y;
+        return size;
+    }
+
 
     // Returns the size of the content area
     getSize() {
@@ -418,6 +625,7 @@ export default class IRenderable {
 
         //size = this.applyMarginSize(size);
         size = this.applyBorderSize(size);
+        size = this.applyPaddingSize(size);
         size = this.ensureMinimumSize(size);
         size = this.ensureMaximumSize(size);
         return size;
@@ -463,6 +671,23 @@ export default class IRenderable {
         useRealLength(false);
     }
 
+    fillOnce(str, transform) {
+        let { width } = this.getSize();
+        let out = null;
+        useRealLength();
+        if (str.realLength() < width) {
+            out = s(str, this.getSize().width);
+        } else if (str.realLength() >= width) {
+            out = str.substring(0, width);
+        }
+        useRealLength(false);
+
+        if (typeof transform === 'function') {
+            out = transform(out);
+        }
+        this.aBuffer.push(out);
+    }
+
     invokeRender() {
         this.aBuffer = [];
         this.render();
@@ -483,7 +708,49 @@ export default class IRenderable {
         return this.aBuffer;
     }
 
+    onResize = null;
+
     render() {
 
+    }
+
+    show() {
+        let renderBuffer = this.invokeRender();
+        process.stdout.write(renderBuffer.join("\n"));
+    }
+
+    streamConsoleViewportAsync = async (getViewport, cancelCallback) => {
+        const { readkey, consolekeys, cursor } = useContext();
+
+        let loop = true;
+
+        let cancel = () => {
+            loop = false;
+        }
+        if (cancelCallback) cancelCallback(cancel);
+
+        while (loop) {
+            if (getViewport === undefined || getViewport === null) {
+                console.clear();
+                cursor.hide();
+                this.useConsoleViewport();
+            } else {
+                this.setViewport(getViewport());
+            }
+
+            this.show();
+            let key = await readkey(true);
+            switch (key) {
+                case consolekeys.sigint:
+                    loop = false;
+                    break;
+                case consolekeys.resize:
+                    if (this.onResize) {
+                        this.onResize();
+                    }
+                    break;
+            }
+        }
+        cursor.show();
     }
 }

@@ -9,6 +9,10 @@ export default class Grid extends IRenderable {
     render() {
         let { width, height } = this.getSize();
 
-        this.fill("repeating text | " , chalk.green);
+        this.fillOnce("Hello world");
+
+        this.fill();
+
+        //this.useTransform(chalk.strikethrough);
     }
 }
