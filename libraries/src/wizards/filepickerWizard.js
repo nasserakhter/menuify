@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import consolekeys from '../consolekeys.js';
 import moment from 'moment';
 import { execSync } from 'child_process';
+import filesystem from '../filesystem.js';
 
 let dispIndex = 0;
 
@@ -13,8 +14,9 @@ export async function filepickerWizard({ readkey, buffer, props, cursor }) {
     buffer.clear();
     cursor.hide();
 
-    let currentDirectory = getDownloadsFolder();
+    //let currentDirectory = getDownloadsFolder();
     //let currentDirectory = "E:";
+    let currentDirectory = filesystem.rootDir;
     let highlighted = 0;
     let loop = true;
     let marginTop = 6;

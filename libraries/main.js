@@ -17,4 +17,5 @@ try {
     console.error(chalk.red(err.message));
     console.log(chalk.magenta(`You can report this error here: ${chalk.underline("https://microart.cf/menuify/report?code=" + err.code)}`));
     console.warn(chalk.yellow(`${constants.name} will now exit.`));
+    console.log(err);
 }

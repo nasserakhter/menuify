@@ -71,13 +71,13 @@ async function readkey(triggerResize) {
     process.stdin.resume();
     return new Promise(resolve => {
         process.stdin.once('data', (data) => {
-            process.stdin.setRawMode(false);
+            //process.stdin.setRawMode(false);
             process.stdin.pause();
             resolve(data.toString());
         });
         if (triggerResize) {
             process.stdout.once('resize', () => {
-                process.stdin.setRawMode(false);
+                //process.stdin.setRawMode(false);
                 process.stdin.pause();
                 resolve(consolekeys.resize);
             });

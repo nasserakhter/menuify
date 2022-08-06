@@ -22,7 +22,7 @@ export async function startApp() {
     if (!FfmpegInterface.isFfmpegInstalled()) {
         console.log(chalk.yellow("Ffmpeg is not installed, you can install in 'more options'"));
     }
-
+    
     let option = await show(mainMenu);
     let optionPage = null;
 
