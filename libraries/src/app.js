@@ -13,6 +13,7 @@ import path from 'path';
 import { moreMenu } from "./pages/moreMenu.js";
 import FfmpegInterface from "./interface/ffmpegInterface.js";
 import chalk from "chalk";
+import Grid from "./gui/grid2.js";
 
 export async function startApp() {
     process.stdin.setRawMode(true);
@@ -22,7 +23,21 @@ export async function startApp() {
     if (!FfmpegInterface.isFfmpegInstalled()) {
         console.log(chalk.yellow("Ffmpeg is not installed, you can install in 'more options'"));
     }
-    
+
+    await show(async ({ buffer, readkey, consolekeys }) => {
+        buffer.primary();
+        buffer.clear();
+        
+        let grid = new Grid();
+        grid.setViewport(100, 30);
+
+        let aBuffer = grid.invokeRender();
+
+        process.stdout.write(aBuffer.join("\n"));
+
+        await readkey();
+    });
+    return;
     let option = await show(mainMenu);
     let optionPage = null;
 
