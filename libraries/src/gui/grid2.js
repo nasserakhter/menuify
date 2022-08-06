@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import IRenderable from "./IRenderable.js";
 
 export default class Grid extends IRenderable {
@@ -8,6 +9,6 @@ export default class Grid extends IRenderable {
     render() {
         let { width, height } = this.getSize();
 
-        this.fill("transformer , haaa");
+        this.fill("repeating text | " , chalk.green);
     }
 }

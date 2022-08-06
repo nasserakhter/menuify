@@ -24,8 +24,12 @@ export default class IRenderable {
     borders = {
         NONE: 0,
         SOLID: 1,
-        DASHED: 2,
-        DOTTED: 3,
+        SOLID_THICK: 2,
+        ROUNDED: 4,
+        ROUNDED_THICK: 8,
+        DOUBLE: 16,
+        DASHED: 32,
+        DOTTED: 64,
     }
 
     border_orientations = {
@@ -77,10 +81,18 @@ export default class IRenderable {
                     switch (type) {
                         case this.borders.SOLID:
                             return '─';
-                        case this.borders.DASHED:
+                        case this.borders.SOLID_THICK:
+                            return '━';
+                        case this.borders.ROUNDED:
                             return '─';
+                        case this.borders.ROUNDED_THICK:
+                            return '━';
+                        case this.borders.DOUBLE:
+                            return '═';
+                        case this.borders.DASHED:
+                            return '╸';
                         case this.borders.DOTTED:
-                            return '.';
+                            return '⁃';
                         case this.borders.NONE:
                         default:
                             return '';
@@ -90,23 +102,103 @@ export default class IRenderable {
                 case this.border_orientations.RIGHT:
                     switch (type) {
                         case this.borders.SOLID:
-                            return '|';
+                            return '│';
+                        case this.borders.SOLID_THICK:
+                            return '┃';
+                        case this.borders.ROUNDED:
+                            return '│';
+                        case this.borders.ROUNDED_THICK:
+                            return '┃';
+                        case this.borders.DOUBLE:
+                            return '║';
                         case this.borders.DASHED:
-                            return '|';
+                            return '╻'
                         case this.borders.DOTTED:
-                            return ':';
+                            return '╎';
                         case this.borders.NONE:
                         default:
                             return '';
                     }
                 case this.border_orientations.TOP_LEFT:
-                    return '┌';
+                    switch (type) {
+                        case this.borders.SOLID:
+                            return '┌';
+                        case this.borders.SOLID_THICK:
+                            return '┏';
+                        case this.borders.ROUNDED:
+                            return '╭';
+                        case this.borders.ROUNDED_THICK:
+                            return '╭';
+                        case this.borders.DOUBLE:
+                            return '╔';
+                        case this.borders.DASHED:
+                            return '╻'
+                        case this.borders.DOTTED:
+                            return '┌';
+                        case this.borders.NONE:
+                        default:
+                            return '';
+                    }
                 case this.border_orientations.TOP_RIGHT:
-                    return '┐';
+                    switch (type) {
+                        case this.borders.SOLID:
+                            return '┐';
+                        case this.borders.SOLID_THICK:
+                            return '┓';
+                        case this.borders.ROUNDED:
+                            return '╮';
+                        case this.borders.ROUNDED_THICK:
+                            return '╮';
+                        case this.borders.DOUBLE:
+                            return '╗';
+                        case this.borders.DASHED:
+                            return '╻'
+                        case this.borders.DOTTED:
+                            return '┐';
+                        case this.borders.NONE:
+                        default:
+                            return '';
+                    }
                 case this.border_orientations.BOTTOM_LEFT:
-                    return '└';
+                    switch (type) {
+                        case this.borders.SOLID:
+                            return '└';
+                        case this.borders.SOLID_THICK:
+                            return '┗';
+                        case this.borders.ROUNDED:
+                            return '╰';
+                        case this.borders.ROUNDED_THICK:
+                            return '╰';
+                        case this.borders.DOUBLE:
+                            return '╚';
+                        case this.borders.DASHED:
+                            return ' '
+                        case this.borders.DOTTED:
+                            return '└';
+                        case this.borders.NONE:
+                        default:
+                            return '';
+                    }
                 case this.border_orientations.BOTTOM_RIGHT:
-                    return '┘';
+                    switch (type) {
+                        case this.borders.SOLID:
+                            return '┘';
+                        case this.borders.SOLID_THICK:
+                            return '┛';
+                        case this.borders.ROUNDED:
+                            return '╯';
+                        case this.borders.ROUNDED_THICK:
+                            return '╯';
+                        case this.borders.DOUBLE:
+                            return '╝';
+                        case this.borders.DASHED:
+                            return '╸'
+                        case this.borders.DOTTED:
+                            return '┘';
+                        case this.borders.NONE:
+                        default:
+                            return '';
+                    }
             }
         }
     }
@@ -130,8 +222,10 @@ export default class IRenderable {
             right: this._nominal.border.right,
             bottom: this._nominal.border.bottom,
             left: this._nominal.border.left,
-            x: this._nominal.border.left + this._nominal.border.right,
-            y: this._nominal.border.top + this._nominal.border.bottom
+            x: (this._nominal.border.left !== this.borders.NONE ? 1 : 0) +
+                (this._nominal.border.right !== this.borders.NONE ? 1 : 0),
+            y: (this._nominal.border.top !== this.borders.NONE ? 1 : 0) +
+                (this._nominal.border.bottom !== this.borders.NONE ? 1 : 0)
         }
     }
 
@@ -334,7 +428,7 @@ export default class IRenderable {
      * @param {*} str the string to fill the buffer with
      * @param {*} transform  the transform to apply to the string
      */
-    fill(str, transform) {
+    fill(str, transform, passArguments) {
         let { width, height } = this.getSize();
         let requiredHeight = height - this.aBuffer.length;
         let size = width;
@@ -352,7 +446,17 @@ export default class IRenderable {
                 fill = s(fill, width);
             }
             if (typeof transform === 'function') {
-                fill = transform(fill);
+                if (passArguments) {
+                    fill = transform(fill, {
+                        width,
+                        height,
+                        fillWidth: size,
+                        fillHeight: requiredHeight,
+                        index: i
+                    });
+                } else {
+                    fill = transform(fill);
+                }
             }
             this.aBuffer.push(fill);
         }

@@ -30,8 +30,11 @@ export async function startApp() {
         let grid = new Grid()
         //grid.setViewport(process.stdout.columns, 10);
         grid.useConsoleViewport();
-        grid.uniformBorder(1);
+        grid.uniformBorder(grid.borders.ROUNDED);
         grid.marginLeft(20);
+        grid.marginBottom(15);
+        grid.marginRight(10);
+        grid.marginTop(18);
 
         let aBuffer = grid.invokeRender();
 
