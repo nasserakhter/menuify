@@ -5,7 +5,6 @@ import { validateProject } from "../validator.js";
 import { compile } from "../compile.js";
 import MenuifyError from "../menuifyError.js";
 import chalk from "chalk";
-import terminalImage from 'terminal-image';
 import saffron from "../gui/saffron.js";
 import { useRealLength } from "../gui/saffronUtils.js";
 

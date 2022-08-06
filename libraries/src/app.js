@@ -25,11 +25,13 @@ export async function startApp() {
     }
 
     await show(async ({ buffer, readkey, consolekeys }) => {
-        buffer.primary();
+        buffer.secondary();
         buffer.clear();
-        
-        let grid = new Grid();
-        grid.setViewport(100, 30);
+        let grid = new Grid()
+        //grid.setViewport(process.stdout.columns, 10);
+        grid.useConsoleViewport();
+        grid.uniformBorder(1);
+        grid.marginLeft(20);
 
         let aBuffer = grid.invokeRender();
 
