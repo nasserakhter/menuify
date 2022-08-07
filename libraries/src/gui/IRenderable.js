@@ -84,6 +84,11 @@ export default class IRenderable {
         viewportWidth: this.sizes.UNSET,
         viewportHeight: this.sizes.UNSET,
 
+        scrollX: 0,
+        scrollY: 0,
+
+        focus: false,
+
         transform: (arg) => { return arg; }, // blank transform function
     }
 
@@ -235,6 +240,18 @@ export default class IRenderable {
         } else if (typeof value === 'number') {
             return value;
         }
+    }
+
+    focus() {
+        this._nominal.focus = true;
+    }
+
+    blur() {
+        this._nominal.focus = false;
+    }
+
+    hasFocus() {
+        return this._nominal.focus;
     }
 
     applyMarginRatio(margin) {
@@ -528,7 +545,6 @@ export default class IRenderable {
                 this.aBuffer.push(" ".repeat(width + left + right));
             }
         }
-
     }
 
     applyBorder() {
@@ -698,8 +714,10 @@ export default class IRenderable {
                 throw new Error("Renderable buffer dimensions must be equal to control dimensions");
             }
         });
-        if (this.aBuffer.length !== height) {
-            throw new Error("Renderable buffer dimensions must be equal to control dimensions");
+        if (this.aBuffer.length < height) {
+            this.fill();
+        } else if (this.aBuffer.length > height) {
+            this.aBuffer = this.aBuffer.slice(0, height);
         }
         useRealLength(false);
 

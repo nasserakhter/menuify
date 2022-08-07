@@ -17,4 +17,33 @@ export function useRealLength(value = true) {
     }
 }
 
+export function __EXPERIMENTAL__cutEnd(str, length) {
+    let parts = str.split(/(?=\x1b[a-zA-Z0-9\[\];]*m)/g);
+    let requiredLength = length;
+    let processedParts = [];
+    for (let i = parts.length - 1; i >= 0; i--) {
+        if (requiredLength > 0) {
+            let part = parts[i];
+            let notallowedLength = part.match(/\x1b[a-zA-Z0-9\[\];]*m/g)[0].length;
+            let allowedLength = part.length - notallowedLength;
+            if (allowedLength > 0) {
+                // allowedLength is the length of the part that is allowed to be cut
+                if (allowedLength > requiredLength) {
+                    processedParts.unshift(part.substring(0, part.length - requiredLength));
+                    requiredLength = 0;
+                } else {
+                    processedParts.unshift(part.substring(0, part.length - allowedLength));
+                    requiredLength -= allowedLength;
+                }
+            } else {
+                // string is only escapes, so just add it
+                processedParts.unshift(part);
+            }
+        } else {
+            processedParts.unshift(parts[i]);
+        }
+    }
+    return processedParts.join("");
+}
+
 export let useContext = getContext;
