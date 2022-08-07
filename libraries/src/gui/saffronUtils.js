@@ -1,10 +1,10 @@
 import { getContext } from "../context.js";
 
-export function s(str, wid) {
+export function s(str, wid, char) {
     useRealLength();
     let length = str.realLength();
     useRealLength(false);
-    return str + " ".repeat(Math.max(0, wid - length));
+    return str + (char ?? " ").repeat(Math.max(0, wid - length));
 }
 
 export function useRealLength(value = true) {
@@ -14,6 +14,16 @@ export function useRealLength(value = true) {
         }
     } else {
         delete String.prototype.realLength;
+    }
+}
+
+export function repeat(times, func) {
+    for (let i = 0; i < times; i++) {
+        func({
+            index: i,
+            first: i == 0,
+            last: i == times - 1
+        });
     }
 }
 

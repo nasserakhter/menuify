@@ -27,7 +27,13 @@ export async function startApp() {
     await show(async ({ buffer, readkey, consolekeys }) => {
         buffer.secondary();
         buffer.clear();
-        let grid = new Grid()
+        let grid = new Grid();
+        let grid2 = new Grid();
+        grid2.uniformBorder(grid2.borders.SOLID);
+        grid.children.push(grid2);
+        let grid3 = new Grid();
+        grid3.uniformBorder(grid3.borders.SOLID);
+        grid.children.push(grid3);
         //grid.setViewport(process.stdout.columns, 10);
         grid.useConsoleViewport();
         grid.uniformBorder(grid.borders.SOLID);

@@ -4,10 +4,16 @@ import chalk from "chalk";
 export default class IRenderable {
 
     // Constructor
-    constructor(viewport) {
+    constructor(name) {
+        /*
         if (viewport) {
             this._nominal.viewportWidth = viewport.width ?? this.sizes.UNSET;
             this._nominal.viewportHeight = viewport.height ?? this.sizes.UNSET;
+        }*/
+        if (name) {
+            this.name = name;
+        } else {
+            throw new Error('Name is required for all renderables');
         }
     }
 
@@ -48,9 +54,11 @@ export default class IRenderable {
         BOTTOM_RIGHT: 7
     }
 
-    scrollbarStyle = {
+    styles = {
         railColor: [45, 55, 80],
         headColor: [80, 100, 120],
+        borderBlur: [100, 110, 140],
+        borderFocus: [255, 255, 255]
     }
 
     // Getters and setters
@@ -225,6 +233,61 @@ export default class IRenderable {
                         default:
                             return '';
                     }
+            }
+        }
+    }
+
+    _debug = {
+        _enabled: false,
+        enable: () => { this._debug._enabled = true; },
+        disable: () => { this._debug._enabled = false; },
+        getTitleBarInfo: (delim) => {
+            let { width, height } = this.getSize();
+            let viewport = this.getViewport(false);
+            if (this._debug._enabled) {
+                let fill = width - 1;
+                let debugText = "";
+
+                useRealLength();
+                //debugText = `${width}x${height}`;
+                let perecedence = [
+                    { text: `${width}x${height}`, prepend: false },
+                    { text: `${viewport.width}x${viewport.height}`, prepend: false },
+                    { text: `${this._nominal.scrollX}x${this._nominal.scrollY}`, prepend: false },
+                    { text: this.name, prepend: true },
+                ];
+
+                let tempText = [];
+                let tempFill = fill;
+                for (let i = 0; i < perecedence.length; i++) {
+                    let { text, prepend } = perecedence[i];
+                    //let spacer = Math.min(tempText.length, 1);
+                    tempFill = i === 0 ? tempFill - 1 : tempFill;
+                    if (tempFill - 1 > text.realLength()) {
+                        tempFill -= text.realLength() + 1;
+                        if (prepend) {
+                            tempText.unshift(text);
+                        } else {
+                            tempText.push(text);
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                debugText = chalk.bgRgb(0, 230, 140).black(" " + tempText.join(delim ?? "|") + " ");
+                fill = tempFill;
+
+                useRealLength(false);
+
+                return {
+                    debugText,
+                    borderWidth: fill
+                }
+            } else {
+                return {
+                    debugText: "",
+                    borderWidth: width - 1,
+                }
             }
         }
     }
@@ -495,6 +558,13 @@ export default class IRenderable {
         return size;
     }
 
+    _calculateRealWidth() {
+        useRealLength();
+        let wid = (this.lastBuffer ?? this.aBuffer).reduce((real, line) => Math.max(real, (line && line.realLength()) ?? 0), 0);
+        useRealLength(false);
+        return wid;
+    }
+
     // Applies the margin dimensions to the size
     applyMarginSize(size) {
         let { x, y } = this.getMargin();
@@ -576,10 +646,10 @@ export default class IRenderable {
             let headTop = Math.ceil(ratio * this._nominal.scrollX);
             let vBuffer = [];
             for (let i = 0; i < height; i++) {
-                if (i < headTop || i >= headTop + headHeight) {
-                    vBuffer.push(chalk.bgRgb(...this.scrollbarStyle.railColor)(" "));
+                if (i < headTop || i >= headTop + headHeight - 1) {
+                    vBuffer.push(chalk.bgRgb(...this.styles.railColor)(" "));
                 } else {
-                    vBuffer.push(chalk.bgRgb(...this.scrollbarStyle.headColor)(" "));
+                    vBuffer.push(chalk.bgRgb(...this.styles.headColor)(" "));
                 }
             }
             this.aBuffer = this.aBuffer.map((line, i) => { return line + vBuffer[i] });
@@ -589,6 +659,7 @@ export default class IRenderable {
     applyBorder() {
         let { top, right, bottom, left } = this.getBorder();
         let { width } = this.unapplyPaddingSize(this.getSize());
+        let hasFocus = this.hasFocus();
         let borderTopLeft = this._native.getBorderCharacter(top, this.border_orientations.TOP_LEFT);
         let borderTop = this._native.getBorderCharacter(top, this.border_orientations.TOP);
         let borderTopRight = this._native.getBorderCharacter(top, this.border_orientations.TOP_RIGHT);
@@ -598,6 +669,16 @@ export default class IRenderable {
         let borderBottom = this._native.getBorderCharacter(bottom, this.border_orientations.BOTTOM);
         let borderBottomRight = this._native.getBorderCharacter(bottom, this.border_orientations.BOTTOM_RIGHT);
 
+        borderTopLeft = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderTopLeft) : chalk.rgb(...this.styles.borderBlur)(borderTopLeft);
+        borderTop = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderTop) : chalk.rgb(...this.styles.borderBlur)(borderTop);
+        borderTopRight = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderTopRight) : chalk.rgb(...this.styles.borderBlur)(borderTopRight);
+        borderRight = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderRight) : chalk.rgb(...this.styles.borderBlur)(borderRight);
+        borderLeft = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderLeft) : chalk.rgb(...this.styles.borderBlur)(borderLeft);
+        borderBottomLeft = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderBottomLeft) : chalk.rgb(...this.styles.borderBlur)(borderBottomLeft);
+        borderBottom = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderBottom) : chalk.rgb(...this.styles.borderBlur)(borderBottom);
+        borderBottomRight = hasFocus ? chalk.rgb(...this.styles.borderFocus)(borderBottomRight) : chalk.rgb(...this.styles.borderBlur)(borderBottomRight);
+
+
         if (left !== this.borders.NONE) {
             this.aBuffer = this.aBuffer.map(x => borderLeft + x);
         }
@@ -605,10 +686,12 @@ export default class IRenderable {
             this.aBuffer = this.aBuffer.map(x => x + borderRight);
         }
         if (top !== this.borders.NONE) {
-            this.aBuffer.unshift(borderTopLeft + borderTop.repeat(width) + borderTopRight);
+            let { debugText, borderWidth } = this._debug.getTitleBarInfo();
+
+            this.aBuffer.unshift(borderTopLeft + (new Array(borderWidth).fill(borderTop)).join("") + debugText + borderTop + borderTopRight);
         }
         if (bottom !== this.borders.NONE) {
-            this.aBuffer.push(borderBottomLeft + borderBottom.repeat(width) + borderBottomRight);
+            this.aBuffer.push(borderBottomLeft + (new Array(width).fill(borderBottom)).join("") + borderBottomRight);
         }
     }
 
@@ -733,7 +816,7 @@ export default class IRenderable {
         if (str.realLength() < width) {
             out = s(str, this.getSize().width);
         } else if (str.realLength() >= width) {
-            out = str.substring(0, width);
+            out = __EXPERIMENTAL__cutEnd(str, Math.max(str.realLength() - width, 0));
         }
         useRealLength(false);
 
@@ -752,7 +835,7 @@ export default class IRenderable {
         useRealLength(true);
 
         this.aBuffer.forEach(line => {
-            if (line.realLength() !== width) {
+            if (line === null || line === undefined || line.realLength() !== width) {
                 throw new Error("Renderable buffer dimensions must be equal to control dimensions");
             }
         });
@@ -783,6 +866,14 @@ export default class IRenderable {
         process.stdout.write(renderBuffer.join("\n"));
     }
 
+    scrollDown() {
+        this._nominal.scrollX = Math.min(this.lastBuffer.length - this.getSize().height, this._nominal.scrollX + 1);
+    }
+
+    scrollUp() {
+        this._nominal.scrollX = Math.max(0, this._nominal.scrollX - 1);
+    }
+
     streamConsoleViewportAsync = async (getViewport, cancelCallback) => {
         const { readkey, consolekeys, cursor } = useContext();
 
@@ -802,6 +893,7 @@ export default class IRenderable {
                 this.setViewport(getViewport());
             }
 
+            this.focus();
             this.show();
             let key = await readkey(true);
             switch (key) {
@@ -814,10 +906,10 @@ export default class IRenderable {
                     }
                     break;
                 case consolekeys.up:
-                    this._nominal.scrollX = Math.max(0, this._nominal.scrollX - 1);
+                    this.scrollUp();
                     break;
                 case consolekeys.down:
-                    this._nominal.scrollX = Math.min(this.lastBuffer.length - this.getViewport().height, this._nominal.scrollX + 1);
+                    this.scrollDown();
                     break;
             }
         }
