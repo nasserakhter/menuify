@@ -31,6 +31,7 @@ export async function startApp() {
         //grid.setViewport(process.stdout.columns, 10);
         grid.useConsoleViewport();
         grid.uniformBorder(grid.borders.SOLID);
+        //grid.paddingRight(1);
         //grid.uniformPadding(1);
 
         let sizeMargins = () => {

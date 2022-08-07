@@ -24,8 +24,13 @@ export function __EXPERIMENTAL__cutEnd(str, length) {
     for (let i = parts.length - 1; i >= 0; i--) {
         if (requiredLength > 0) {
             let part = parts[i];
-            let notallowedLength = part.match(/\x1b[a-zA-Z0-9\[\];]*m/g)[0].length;
-            let allowedLength = part.length - notallowedLength;
+            let allowedLength = 0;
+            if (part.startsWith("\x1b")) {
+                let notallowedLength = part.match(/\x1b[a-zA-Z0-9\[\];]*m/g)[0].length;
+                allowedLength = part.length - notallowedLength;
+            } else {
+                allowedLength = part.length;
+            }
             if (allowedLength > 0) {
                 // allowedLength is the length of the part that is allowed to be cut
                 if (allowedLength > requiredLength) {

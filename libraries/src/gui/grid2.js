@@ -11,8 +11,8 @@ export default class Grid extends IRenderable {
 
         this.fillOnce("Hello world");
 
-        for (let i = 0; i < height * 2; i++) {
-            this.fillOnce("Hello world");
+        for (let i = 0; i < height * 3; i++) {
+            this.fillOnce("H".repeat(width));
         }
 
         //this.useTransform(chalk.strikethrough);

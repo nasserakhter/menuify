@@ -1,4 +1,5 @@
-import { s, useRealLength, useContext } from "./saffronUtils.js";
+import { s, useRealLength, useContext, __EXPERIMENTAL__cutEnd } from "./saffronUtils.js";
+import chalk from "chalk";
 
 export default class IRenderable {
 
@@ -47,6 +48,11 @@ export default class IRenderable {
         BOTTOM_RIGHT: 7
     }
 
+    scrollbarStyle = {
+        railColor: [45, 55, 80],
+        headColor: [80, 100, 120],
+    }
+
     // Getters and setters
     _nominal = {
         margin: {
@@ -86,6 +92,7 @@ export default class IRenderable {
 
         scrollX: 0,
         scrollY: 0,
+        scrollbar: false,
 
         focus: false,
 
@@ -514,7 +521,9 @@ export default class IRenderable {
 
     postprocess() {
         this.applyTransform();
+        this.preapplyScrollbar();
         this.applyPadding();
+        this.applyScrollbar();
         this.applyBorder();
         this.applyMargin();
     }
@@ -525,9 +534,20 @@ export default class IRenderable {
         }
     }
 
+    preapplyScrollbar() {
+        if (this._nominal.scrollbar) {
+            if (this._nominal.padding.right === this.paddings.NONE) {
+                // If there is no padding on the right, delete the last column of the buffer
+                this.aBuffer = this.aBuffer.map((line) => { return __EXPERIMENTAL__cutEnd(line, 1) });
+            }
+        }
+    }
+
     applyPadding() {
         let { top, right, bottom, left } = this.getPadding();
         let { width } = this.getSize();
+
+        if (this._nominal.scrollbar) right = Math.max(right - 1, 0);
 
         if (left !== this.paddings.NONE) {
             this.aBuffer = this.aBuffer.map(x => " ".repeat(left) + x);
@@ -544,6 +564,25 @@ export default class IRenderable {
             for (let i = 0; i < bottom; i++) {
                 this.aBuffer.push(" ".repeat(width + left + right));
             }
+        }
+    }
+
+    applyScrollbar() {
+        if (this._nominal.scrollbar) {
+            let { height } = this.getSize();
+            let contentHeight = this.lastBuffer.length;
+            let ratio = height / contentHeight;
+            let headHeight = Math.ceil(ratio * height);
+            let headTop = Math.ceil(ratio * this._nominal.scrollX);
+            let vBuffer = [];
+            for (let i = 0; i < height; i++) {
+                if (i < headTop || i >= headTop + headHeight) {
+                    vBuffer.push(chalk.bgRgb(...this.scrollbarStyle.railColor)(" "));
+                } else {
+                    vBuffer.push(chalk.bgRgb(...this.scrollbarStyle.headColor)(" "));
+                }
+            }
+            this.aBuffer = this.aBuffer.map((line, i) => { return line + vBuffer[i] });
         }
     }
 
@@ -707,18 +746,25 @@ export default class IRenderable {
     invokeRender() {
         this.aBuffer = [];
         this.render();
+        this.lastBuffer = this.aBuffer;
+
         let { width, height } = this.getSize();
         useRealLength(true);
+
         this.aBuffer.forEach(line => {
             if (line.realLength() !== width) {
                 throw new Error("Renderable buffer dimensions must be equal to control dimensions");
             }
         });
+
         if (this.aBuffer.length < height) {
             this.fill();
         } else if (this.aBuffer.length > height) {
-            this.aBuffer = this.aBuffer.slice(0, height);
+            // trim the buffer, but also enable scrolling
+            this._nominal.scrollbar = true;
+            this.aBuffer = this.aBuffer.slice(this._nominal.scrollX, this._nominal.scrollX + height);
         }
+
         useRealLength(false);
 
         this.postprocess();
@@ -766,6 +812,12 @@ export default class IRenderable {
                     if (this.onResize) {
                         this.onResize();
                     }
+                    break;
+                case consolekeys.up:
+                    this._nominal.scrollX = Math.max(0, this._nominal.scrollX - 1);
+                    break;
+                case consolekeys.down:
+                    this._nominal.scrollX = Math.min(this.lastBuffer.length - this.getViewport().height, this._nominal.scrollX + 1);
                     break;
             }
         }
