@@ -1,6 +1,12 @@
 # Menuify Changelog
 
-### 0.2-alpha
+
+### 0.4-alpha
+
+- Fixed bugs with quotes in folder paths
+- Fixed cascading buttons bug
+
+### 0.3-alpha
 
 - Added support for all file syntax (*)
 - Added support for powershell scripts
