@@ -63,7 +63,7 @@ export default class FfmpegInterface {
     static async _installFfmpeg() {
         console.log(chalk.yellow("Getting latest version..."));
         let githubReleases = await filesystem.httpGet(constants.ffmpegReleasesEndpoint);
-        let ffmpegRelease = githubReleases.assets.find(release => release.name === "ffmpeg-master-latest-win64-lgpl.zip");
+        let ffmpegRelease = githubReleases.assets.find(release => release.name === "ffmpeg-master-latest-win64-gpl.zip");
 
         let tmpFile = tmp.fileSync({ postfix: ".zip" });
         console.log(chalk.yellow("Downloading ffmpeg..."));

@@ -7,9 +7,11 @@ export default class Grid extends IRenderableWithChildren {
         super("Grid");
     }
 
-    columns = this.sizes.UNSET;
-    rows = this.sizes.UNSET;
-    gapX = 1;
+    //columns = this.sizes.UNSET;
+    //rows = this.sizes.UNSET;
+    columns = 3;
+    rows = 3;
+    gapX = 2;
     gapY = 1;
     gapRatio = [1, 1];
 
@@ -32,9 +34,9 @@ export default class Grid extends IRenderableWithChildren {
         Then we print
         */
 
-        let cBuffers = this.renderChildren();
+        //let cBuffers = this.renderChildren();
 
-        /*
+        
         let cBuffers = this.renderChildren();
         let cSizes = this.getChildrenSizes();
     
@@ -75,7 +77,7 @@ export default class Grid extends IRenderableWithChildren {
                     this.fillOnce(" ");
                 }
             }
-        }*/
+        }
 
         //this.fillOnce(largestLength.toString());
         //this.fillOnce(widths.join(","));

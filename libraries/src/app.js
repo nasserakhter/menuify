@@ -24,7 +24,8 @@ export async function startApp() {
         console.log(chalk.yellow("Ffmpeg is not installed, you can install in 'more options'"));
     }
 
-    /*await show(async ({ buffer, readkey, consolekeys }) => {
+    /*
+    await show(async ({ buffer, readkey, consolekeys }) => {
         buffer.secondary();
         buffer.clear();
         let grid = new Grid();
