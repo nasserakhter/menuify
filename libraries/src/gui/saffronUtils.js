@@ -21,10 +21,22 @@ export function repeat(times, func) {
     for (let i = 0; i < times; i++) {
         func({
             index: i,
-            first: i == 0,
-            last: i == times - 1
+            isFirst: i == 0,
+            isLast: i == times - 1
         });
     }
+}
+
+export function sizeTo(width, str) {
+    let out = null;
+    useRealLength();
+    if (str.realLength() < width) {
+        out = s(str, width);
+    } else if (str.realLength() >= width) {
+        out = __EXPERIMENTAL__cutEnd(str, Math.max(str.realLength() - width, 0));
+    }
+    useRealLength(false);
+    return out;
 }
 
 export function __EXPERIMENTAL__cutEnd(str, length) {

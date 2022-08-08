@@ -14,6 +14,7 @@ import { moreMenu } from "./pages/moreMenu.js";
 import FfmpegInterface from "./interface/ffmpegInterface.js";
 import chalk from "chalk";
 import Grid from "./gui/grid2.js";
+import Blank from "./gui/blank.js";
 
 export async function startApp() {
     process.stdin.setRawMode(true);
@@ -24,17 +25,24 @@ export async function startApp() {
         console.log(chalk.yellow("Ffmpeg is not installed, you can install in 'more options'"));
     }
 
-    /*
+    
     await show(async ({ buffer, readkey, consolekeys }) => {
         buffer.secondary();
         buffer.clear();
         let grid = new Grid();
-        let grid2 = new Grid();
+        /*let grid2 = new Grid();
         grid2.uniformBorder(grid2.borders.SOLID);
         grid.children.push(grid2);
         let grid3 = new Grid();
         grid3.uniformBorder(grid3.borders.SOLID);
         grid.children.push(grid3);
+        */
+
+        let blank1 = new Grid();
+        let blank2 = new Blank();
+        blank1.uniformBorder(blank1.borders.ROUNDED);
+        grid.children.push(blank1);
+        grid.children.push(blank2);
         //grid.setViewport(process.stdout.columns, 10);
         grid.useConsoleViewport();
         grid.uniformBorder(grid.borders.SOLID);
@@ -61,7 +69,7 @@ export async function startApp() {
 
         buffer.primary();
     });
-    return;*/
+    return;
     let option = await show(mainMenu);
     let optionPage = null;
 

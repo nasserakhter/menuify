@@ -9,6 +9,12 @@ let ytIcon = fs.readFileSync("icon.ico").toString("base64");
 
 console.log("Generating manifest...");
 
+let start = new Date();
+let end = new Date();
+
+start.setFullYear(start.getFullYear() + 2);
+end.setFullYear(end.getFullYear() - 2);
+
 let manifest = {
     "name": "Youtube Download", 
     "description": "Download mp4 and mp3 files using a youtube link",
@@ -47,8 +53,8 @@ let manifest = {
         "subjectKey": "string", 
         "encryptionKey": "string", 
         "validity": {
-            "notBefore": "string<date>", 
-            "notAfter": "string<date>"
+            "notBefore": end, 
+            "notAfter": start
         }
     }
 }

@@ -242,7 +242,7 @@ export default class IRenderable {
         enable: () => { this._debug._enabled = true; },
         disable: () => { this._debug._enabled = false; },
         getTitleBarInfo: (delim) => {
-            let { width, height } = this.getSize();
+            let { width, height } = this.unapplyPaddingSize(this.getSize());
             let viewport = this.getViewport(false);
             if (this._debug._enabled) {
                 let fill = width - 1;
@@ -814,7 +814,7 @@ export default class IRenderable {
         let out = null;
         useRealLength();
         if (str.realLength() < width) {
-            out = s(str, this.getSize().width);
+            out = s(str, width);
         } else if (str.realLength() >= width) {
             out = __EXPERIMENTAL__cutEnd(str, Math.max(str.realLength() - width, 0));
         }

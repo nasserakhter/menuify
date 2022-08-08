@@ -13,7 +13,7 @@ if (process.argv.length > 2) {
             "subjectKey": "", // Encrypted public key for the digital signatures
             "validity": {
                 "notBefore": "", // Date before which the certificate is not valid.
-                "notAfter": "string<date>" // Date after which the certificate is not valid.
+                "notAfter": Date.now() // Date after which the certificate is not valid.
             }
         };
     } else {
