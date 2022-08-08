@@ -7,10 +7,20 @@ export default class Grid extends IRenderableWithChildren {
         super("Grid");
     }
 
-    columns = 3;
-    rows = 3;
-    gapX = 2;
+    columns = this.sizes.UNSET;
+    rows = this.sizes.UNSET;
+    gapX = 1;
     gapY = 1;
+    gapRatio = [1, 1];
+
+    getSizingType() {
+        if (this.columns === this.sizes.UNSET) {
+        }
+        if (this.rows === this.sizes.UNSET) {
+        }
+
+    }
+
 
     render() {
         let { width, height } = this.getSize();
@@ -23,36 +33,39 @@ export default class Grid extends IRenderableWithChildren {
         */
 
         let cBuffers = this.renderChildren();
-        let cSizes = this.getChildrenSizes();
 
+        /*
+        let cBuffers = this.renderChildren();
+        let cSizes = this.getChildrenSizes();
+    
         let cellWidth = Math.floor((width - (this.columns - 1) * this.gapX) / this.columns);
         let cellHeight = Math.floor((height - (this.rows - 1) * this.gapY) / this.rows);
-
+    
         for (let row = 0; row < this.rows; row++) {
             for (let rowHeight = 0; rowHeight < cellHeight; rowHeight++) {
                 let tempBuffer = [];
                 for (let col = 0; col < this.columns; col++) {
                     let tempStringBuffer = "";
-
+    
                     let _cellWidth = cellWidth;
-
+    
                     if (col === this.columns - 1) {
                         // this is last, check and make sure the column widths + gaps are equal to the width of the grid
                         let totalWidth = cellWidth * this.columns + this.gapX * (this.columns - 1);
                         let remainingWidth = width - totalWidth;
                         _cellWidth += remainingWidth;
                     }
-
+    
                     //tempStringBuffer += s("", _cellWidth, "A");
                     repeat(_cellWidth, () => {
                         tempStringBuffer += chalk.bgYellow("A");
                     });
-                    
-
+    
+    
                     if (col !== this.columns - 1) {
                         tempStringBuffer += " ".repeat(this.gapX);
                     }
-
+    
                     tempBuffer.push(tempStringBuffer);
                 }
                 this.fillOnce(tempBuffer.join(""));
@@ -62,7 +75,7 @@ export default class Grid extends IRenderableWithChildren {
                     this.fillOnce(" ");
                 }
             }
-        }
+        }*/
 
         //this.fillOnce(largestLength.toString());
         //this.fillOnce(widths.join(","));

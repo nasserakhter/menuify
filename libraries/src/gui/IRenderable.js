@@ -874,7 +874,7 @@ export default class IRenderable {
         this._nominal.scrollX = Math.max(0, this._nominal.scrollX - 1);
     }
 
-    streamConsoleViewportAsync = async (getViewport, cancelCallback) => {
+    streamConsoleViewportAsync = async (cancelCallback) => {
         const { readkey, consolekeys, cursor } = useContext();
 
         let loop = true;
@@ -885,13 +885,9 @@ export default class IRenderable {
         if (cancelCallback) cancelCallback(cancel);
 
         while (loop) {
-            if (getViewport === undefined || getViewport === null) {
-                console.clear();
-                cursor.hide();
-                this.useConsoleViewport();
-            } else {
-                this.setViewport(getViewport());
-            }
+            console.clear();
+            cursor.hide();
+            this.useConsoleViewport();
 
             this.focus();
             this.show();

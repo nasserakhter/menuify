@@ -208,13 +208,16 @@ async function bindDirectoryButtons(project, buttons) {
 }
 
 export async function bindButtons(project, buttons) {
+    let fileAssoc = constants.regkey;
     let ext = project.ext;
     if (project.ext === "[dir]") {
-        return bindDirectoryButtons(project, buttons);
+        return bindDirectory(project, button, location);
     } else if (project.ext !== "*") {
         ext = "." + project.ext;
     }
-    let rawRoot = `${constants.regkey}/${ext}/shell`;
+    let fileAssocExt = `${fileAssoc}/${ext}`;
+    let rawRoot = `${fileAssocExt}/shell`;
+
     let extRoot;
     try {
         extRoot = registry(rawRoot);
