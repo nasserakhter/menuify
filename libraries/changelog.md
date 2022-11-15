@@ -1,5 +1,11 @@
 # Menuify Changelog
 
+### 0.5-alpha
+
+- Grid UI and other saffron console UI components added
+- Certificate signing for .menu files
+- (TODO) Better creation wizard
+- (TODO) FFmpeg wizard
 
 ### 0.4-alpha
 

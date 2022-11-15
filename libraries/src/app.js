@@ -26,17 +26,13 @@ export async function startApp() {
     }
 
     
-    await show(async ({ buffer, readkey, consolekeys }) => {
+    /*await show(async ({ buffer, readkey, consolekeys }) => {
         buffer.secondary();
         buffer.clear();
         let grid = new Grid();
-        /*let grid2 = new Grid();
-        grid2.uniformBorder(grid2.borders.SOLID);
-        grid.children.push(grid2);
-        let grid3 = new Grid();
-        grid3.uniformBorder(grid3.borders.SOLID);
-        grid.children.push(grid3);
-        */
+        grid.uniformBorder(grid.borders.ROUNDED);
+        grid.columns = 2;
+        grid.rows = 1;
 
         let blank1 = new Grid();
         let blank2 = new Blank();
@@ -45,7 +41,7 @@ export async function startApp() {
         grid.children.push(blank2);
         //grid.setViewport(process.stdout.columns, 10);
         grid.useConsoleViewport();
-        grid.uniformBorder(grid.borders.SOLID);
+        grid.uniformBorder(grid.borders.ROUNDED);
         //grid.paddingRight(1);
         //grid.uniformPadding(1);
 
@@ -69,7 +65,7 @@ export async function startApp() {
 
         buffer.primary();
     });
-    return;
+    return;*/
     let option = await show(mainMenu);
     let optionPage = null;
 

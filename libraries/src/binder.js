@@ -211,7 +211,7 @@ export async function bindButtons(project, buttons) {
     let fileAssoc = constants.regkey;
     let ext = project.ext;
     if (project.ext === "[dir]") {
-        return bindDirectory(project, button, location);
+        return bindDirectoryButtons(project, buttons);
     } else if (project.ext !== "*") {
         ext = "." + project.ext;
     }

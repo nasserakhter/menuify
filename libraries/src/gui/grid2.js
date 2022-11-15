@@ -58,6 +58,8 @@ export default class Grid extends IRenderableWithChildren {
         let { cellWidth, cellHeight } = this.getCellSize();
         let { gapX, gapY } = this.getGap();
 
+        this.setChildFocus();
+
         let childBuffers = [];
         repeat(this.rows, (currentRow) => {
 
