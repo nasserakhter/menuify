@@ -4,7 +4,7 @@ import tmp, { file } from 'tmp';
 import path from "path";
 import { constants } from "../constants.js";
 import chalk from "chalk";
-import { execSync } from "child_process";
+import { execSync, exec } from "child_process";
 import MenuifyError from "../menuifyError.js";
 import which from "which";
 import { logVerbose } from "../logger.js";
@@ -77,7 +77,8 @@ export default class FfmpegInterface {
             fs.mkdirSync(path.join(filesystem.rootDir, "ffmpeg"));
         }
 
-        let ffmpeg = path.join(filesystem.rootDir, "ffmpeg", "ffmpeg.exe");
+        let ffmpegDir = path.join(filesystem.rootDir, "ffmpeg");
+        let ffmpeg = path.join(ffmpegDir, "ffmpeg.exe");
         console.log(chalk.yellow("Extracting ffmpeg..."));
         await filesystem.visualExtractOneFileFromZip(
             tmpFile.name,
@@ -95,6 +96,7 @@ export default class FfmpegInterface {
                     location: ffmpeg,
                     manageable: true
                 };
+                exec(`setx PATH "%PATH%;${ffmpegDir}"`);
                 filesystem.writeRootFile("ffmpeg.json", JSON.stringify(manifest));
                 console.log(chalk.green("Successfully installed ffmpeg v" + version));
             }

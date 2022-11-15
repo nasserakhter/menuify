@@ -15,10 +15,18 @@ import FfmpegInterface from "./interface/ffmpegInterface.js";
 import chalk from "chalk";
 import Grid from "./gui/grid2.js";
 import Blank from "./gui/blank.js";
+import { execSync } from "./native/lib/Command.js";
 
 export async function startApp() {
     process.stdin.setRawMode(true);
-    filesystem.initialize(path.join(getDownloadsFolder() + "/menuify"));
+    let basePath = "";
+    if (process.platform === "win32") {
+        let appdata = execSync("echo %APPDATA%").toString().trim();
+        basePath = path.join(appdata, "microart", "menuify");
+    } else {
+        basePath = path.join(getDownloadsFolder(), "menuify");
+    }
+    filesystem.initialize(basePath);
     await FfmpegInterface.initialize();
 
     if (!FfmpegInterface.isFfmpegInstalled()) {

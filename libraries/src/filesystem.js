@@ -82,7 +82,7 @@ export default class filesystem {
         filesystem.rootDir = rootDir;
         if (!fs.existsSync(rootDir)) {
             try {
-                fs.mkdirSync(rootDir);
+                fs.mkdirSync(rootDir, { recursive: true });
                 logVerbose("Root directory not found, created new one.");
             } catch (e) {
                 throw new MenuifyError(`[!] ERROR 3602: Could not create root directory '${rootDir}'`, 3602);
