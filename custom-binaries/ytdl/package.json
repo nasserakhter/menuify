@@ -1,17 +1,16 @@
 {
   "type": "module",
-  "sourceType": "module",
   "scripts": {
-    "build": "build.cmd"
+    "build": "./build"
   },
   "dependencies": {
-    "@babel/core": "^7.18.10",
-    "@rollup/plugin-babel": "^5.3.1",
-    "@rollup/plugin-commonjs": "^22.0.1",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "babelify": "^10.0.0",
-    "uuid": "^8.3.2",
-    "ytdl-core": "^4.11.0"
+    "@babel/core": "^7.22.9",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.3",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "rollup": "^3.26.3",
+    "uuid": "^9.0.0",
+    "ytdl-core": "^4.11.5"
   }
 }
